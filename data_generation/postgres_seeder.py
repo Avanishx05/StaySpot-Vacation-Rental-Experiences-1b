@@ -2,6 +2,7 @@ import os
 import uuid
 import random
 from decimal import Decimal
+from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -11,12 +12,13 @@ from psycopg2.extras import execute_values,register_uuid
 from faker import Faker
 register_uuid()
 
-DB_NAME = os.getenv("db_name")
-DB_PASSWORD = os.getenv("db_password")
+DB_NAME = os.getenv("PG_DB", "stayspot")
+DB_USER = os.getenv("PG_USER", "postgres")
+DB_PASSWORD = os.getenv("PG_PASSWORD", "")
+DB_HOST = os.getenv("PG_HOST", "localhost")
+DB_PORT = os.getenv("PG_PORT", "5432")
 
-DB_USER = "postgres"
-DB_HOST = "localhost"
-DB_PORT = "5433"
+BOOKING_HISTORY_DAYS = 90
 
 NUM_GUESTS = 10000
 NUM_PROPERTIES = 1000
@@ -78,6 +80,7 @@ def gen_props(conn):
 
     rows = []
     property_ids = []
+    property_prices = {}
 
     for _ in range(NUM_PROPERTIES):
 
@@ -88,6 +91,7 @@ def gen_props(conn):
         latitude = round(random.uniform(8.0, 28.0),4)
         longitude = round(random.uniform(72.0, 88.0),4)
         property_ids.append(property_id)
+        property_prices[property_id] = base_price
 
         rows.append((property_id,title,base_price,latitude,longitude))
 
@@ -106,9 +110,9 @@ def gen_props(conn):
     print(
         f"Total Properties Inserted: {len(property_ids)}")
 
-    return property_ids
+    return property_ids, property_prices
 
-def gen_bookings(conn,guest_ids,property_ids):
+def gen_bookings(conn,guest_ids,property_ids,property_prices):
 
     rows = []
     checked_in_guests = set()
@@ -117,7 +121,10 @@ def gen_bookings(conn,guest_ids,property_ids):
 
         guest_id = random.choice(guest_ids)
         property_id = random.choice(property_ids)
-        total_cost = Decimal(random.randint(1000,30000))
+        nights = random.randint(1, 7)
+        total_cost = property_prices[property_id] * nights
+        created_at = datetime.now(timezone.utc) - timedelta(
+            seconds=random.randint(0, BOOKING_HISTORY_DAYS * 86400))
 
         if (guest_id not in checked_in_guests and random.random() < 0.20):
 
@@ -127,10 +134,10 @@ def gen_bookings(conn,guest_ids,property_ids):
         else:
             status = random.choice(["CONFIRMED","COMPLETED"])
 
-        rows.append((uuid.uuid4(),guest_id,property_id,total_cost,status))
+        rows.append((uuid.uuid4(),guest_id,property_id,nights,total_cost,status,created_at))
 
     query = """
-        insert into bookings (id,guest_id,property_id,total_cost,status) values %s;
+        insert into bookings (id,guest_id,property_id,nights,total_cost,status,created_at) values %s;
     """
     inserted = 0
 
@@ -224,9 +231,13 @@ def main():
         print("Connected to PgSQL server!\n")
 
         guest_ids = gen_guests(conn)
-        property_ids = gen_props(conn)
-        gen_bookings(conn,guest_ids,property_ids)
+        property_ids, property_prices = gen_props(conn)
+        gen_bookings(conn,guest_ids,property_ids,property_prices)
         gen_wallet_updates(conn,guest_ids)
+
+        with conn.cursor() as cur:
+            cur.execute("select refresh_property_summary();")
+        conn.commit()
 
         verify_data(conn)
 

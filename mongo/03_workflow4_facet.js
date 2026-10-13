@@ -1,7 +1,5 @@
-// 03_workflow4_facet.js
-// Step 3, Workflow 4: Multi-Faceted Review Analytics
-// Uses $facet to compute rating distribution, top review tags, and overall
-// average rating in a single aggregation pass over PropertyReviews.
+// Computes rating distribution, top review tags, and overall average rating
+// in a single aggregation pass over PropertyReviews using $facet.
 
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
@@ -15,22 +13,19 @@ async function reviewAnalytics(db) {
     .aggregate([
       {
         $facet: {
-          // Facet 1: how many reviews got each rating value
+          // Count reviews grouped by rating value
           ratingDistribution: [
             { $group: { _id: "$rating", count: { $sum: 1 } } },
             { $sort: { _id: 1 } },
           ],
-          // Facet 2: most frequent review tags (top 5)
-          // $unwind explodes the location_tags array so each tag becomes its
-          // own document - required before $group can count individual tags.
+          // Unwind tags array to rank top 5 most frequent tags
           topTags: [
             { $unwind: "$location_tags" },
             { $group: { _id: "$location_tags", count: { $sum: 1 } } },
             { $sort: { count: -1 } },
             { $limit: 5 },
           ],
-          // Facet 3: overall average rating across ALL reviews (_id: null
-          // groups everything into one bucket instead of splitting by a field)
+          // Aggregate mean rating across all reviews
           overallAverage: [
             { $group: { _id: null, avgRating: { $avg: "$rating" } } },
           ],
@@ -39,7 +34,7 @@ async function reviewAnalytics(db) {
     ])
     .toArray();
 
-  return results[0]; // $facet always returns a single document
+  return results[0];
 }
 
 async function main() {

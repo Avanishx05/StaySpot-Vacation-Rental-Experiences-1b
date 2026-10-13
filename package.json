@@ -1,0 +1,14 @@
+{
+  "name": "stayspot-part-a",
+  "private": true,
+  "scripts": {
+    "mongo:setup": "node mongo/01_collections_and_indexes.js",
+    "mongo:workflow3": "node mongo/02_workflow3_geonear.js",
+    "mongo:workflow4": "node mongo/03_workflow4_facet.js",
+    "mongo:stats": "node performance/mongo_execution_stats.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.8.0"
+  }
+}

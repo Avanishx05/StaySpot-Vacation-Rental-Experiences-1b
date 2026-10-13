@@ -1,10 +1,6 @@
-// 02_workflow3_geonear.js
-// Step 3, Workflow 3: Trending Search Hotspots
-// Uses $geoNear to find recent SearchSessions within 5km of a reference point,
-// then clusters them into "hotspots" by rounding coordinates to a coarser grid.
-//
-// Requires: the 2dsphere index on SearchSessions.location
-// (created by 01_collections_and_indexes.js) must already exist.
+// Groups search sessions near a given coordinate into geographic hotspots.
+// Uses $geoNear with a 2dsphere index to filter by distance and time window,
+// then clusters locations into grid cells using coordinate rounding.
 
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
@@ -12,23 +8,25 @@ const { MongoClient } = require("mongodb");
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB_NAME || "stayspot";
 
-async function trendingHotspots(db) {
+async function trendingHotspots(
+  db,
+  { lng = 78.4867, lat = 17.385, radiusMeters = 5000, recentMinutes = 120 } = {}
+) {
+  const since = new Date(Date.now() - recentMinutes * 60 * 1000);
   const results = await db
     .collection("SearchSessions")
     .aggregate([
       {
-        // Must be the first stage. Filters by distance from `near` AND
-        // sorts nearest-first, using the 2dsphere index.
         $geoNear: {
-          near: { type: "Point", coordinates: [78.4867, 17.385] }, // [lng, lat]
+          near: { type: "Point", coordinates: [lng, lat] },
           distanceField: "distance_meters",
-          maxDistance: 5000, // 5km, in meters (spherical: true)
+          maxDistance: radiusMeters,
           spherical: true,
+          query: { created_at: { $gte: since } },
         },
       },
       {
-        // MongoDB has no built-in "cluster by proximity" stage, so nearby
-        // sessions are grouped by rounding their coordinates to a shared grid cell.
+        // Groups coordinates into grid buckets to identify clusters
         $group: {
           _id: {
             lat_bucket: {
@@ -42,7 +40,7 @@ async function trendingHotspots(db) {
           avg_distance: { $avg: "$distance_meters" },
         },
       },
-      { $sort: { session_count: -1 } }, // busiest hotspot first
+      { $sort: { session_count: -1 } },
     ])
     .toArray();
 

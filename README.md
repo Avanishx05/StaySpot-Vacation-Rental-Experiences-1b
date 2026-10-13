@@ -37,15 +37,16 @@ Workflow 3 — trending search hotspots using $geoNear (Step 3.3)
 
 Workflow 4 — review analytics using $facet (Step 3.4)
 
-## Files
-
-`generateData.js` : Creates the 3 collections and adds sample documents to each
-
-`workflows.js` : Sets up the indexes, then runs Workflow 3 ($geoNear) and Workflow 4 ($facet)
-
-`test.js` : Runs everything above and writes the output to `logs.json`
-
-`logs.json` : Gets created automatically once we run `npm run test`
+```bash
+cp .env.example .env              # then edit the values
+createdb stayspot
+for f in sql/0*.sql; do psql -d stayspot -f "$f"; done
+pip install -r data_generation/requirements.txt
+python data_generation/postgres_seeder.py
+python data_generation/mongo_seeder.py
+npm install
+npm run mongo:setup && npm run mongo:workflow3 && npm run mongo:workflow4
+```
 
 ## A log from an actual run
 
@@ -151,9 +152,7 @@ Execution Time: 43.915 ms
 The following partial unique index is created:
 
 ```sql
-create unique idx_active_stay
-on bookings (guest_id)
-where status = 'CHECKED_IN';
+create unique index idx_active_stay on bookings (guest_id) where status = 'CHECKED_IN';
 ```
 
 This index ensures that the same guest cannot have more than one active CHECKED_IN booking.

@@ -3,7 +3,7 @@ StaySpot MongoDB Seeder
 Generates realistic sample data and 500,000+ geospatial SearchSessions.
 
 Install:
-    pip install pymongo python-dotenv
+    pip install pymongo python-dotenv psycopg2-binary
 
 .env:
     MONGODB_URI=mongodb+srv://...
@@ -18,19 +18,19 @@ from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 from pymongo import MongoClient, ASCENDING
+import psycopg2
 
 load_dotenv()
 
 MONGODB_URI = os.getenv("MONGODB_URI")
 DB_NAME = os.getenv("MONGODB_DB_NAME", "stayspot")
 
-# Assignment workload
 SEARCH_SESSION_COUNT = 500_000
 REVIEW_COUNT = 50_000
 PROPERTY_COUNT = 500
 BATCH_SIZE = 5_000
 
-# Workflow 3 reference point: [longitude, latitude]
+# Reference center coordinates: [longitude, latitude]
 CENTER_LNG = 78.4867
 CENTER_LAT = 17.3850
 
@@ -86,13 +86,33 @@ def recent_datetime(hours=2):
     return now - timedelta(seconds=seconds)
 
 
-def seed_amenities(collection):
+def load_postgres_ids():
+    """Read real property and guest UUIDs so Mongo documents point at Postgres rows."""
+    conn = psycopg2.connect(
+        dbname=os.getenv("PG_DB", "stayspot"),
+        user=os.getenv("PG_USER", "postgres"),
+        password=os.getenv("PG_PASSWORD", ""),
+        host=os.getenv("PG_HOST", "localhost"),
+        port=os.getenv("PG_PORT", "5432"),
+    )
+    try:
+        with conn.cursor() as cur:
+            cur.execute("select id::text, title from properties")
+            properties = cur.fetchall()
+            cur.execute("select id::text from guests")
+            guest_ids = [row[0] for row in cur.fetchall()]
+    finally:
+        conn.close()
+    return properties, guest_ids
+
+
+def seed_amenities(collection, properties):
     documents = []
-    for i in range(1, PROPERTY_COUNT + 1):
+    for property_id, title in properties:
         lng, lat = random_point(8.0)
         documents.append({
-            "property_id": f"PROP-{i:04d}",
-            "title": f"StaySpot Property {i:04d}",
+            "property_id": property_id,
+            "title": title,
             "amenities": random.sample(AMENITIES, random.randint(4, 7)),
             "house_rules": random.sample(HOUSE_RULES, random.randint(2, 4)),
             "accessibility_features": random.sample(
@@ -107,14 +127,14 @@ def seed_amenities(collection):
     print(f"PropertyAmenities: inserted {len(documents):,} documents")
 
 
-def seed_reviews(collection):
+def seed_reviews(collection, property_ids, guest_ids):
     for start in range(0, REVIEW_COUNT, BATCH_SIZE):
         end = min(start + BATCH_SIZE, REVIEW_COUNT)
         batch = []
         for i in range(start + 1, end + 1):
             batch.append({
-                "property_id": f"PROP-{random.randint(1, PROPERTY_COUNT):04d}",
-                "guest_id": f"GUEST-{random.randint(1, 10000):05d}",
+                "property_id": random.choice(property_ids),
+                "guest_id": random.choice(guest_ids),
                 "rating": random.choice([1, 2, 3, 4, 4.5, 5]),
                 "location_tags": random.sample(LOCATION_TAGS, random.randint(2, 4)),
                 "comment": random.choice(COMMENTS),
@@ -174,8 +194,9 @@ def main():
 
         # This script intentionally does not drop collections.
         # Run against a clean database for predictable counts.
-        seed_amenities(db["PropertyAmenities"])
-        seed_reviews(db["PropertyReviews"])
+        properties, guest_ids = load_postgres_ids()
+        seed_amenities(db["PropertyAmenities"], properties)
+        seed_reviews(db["PropertyReviews"], [p[0] for p in properties], guest_ids)
         seed_search_sessions(db["SearchSessions"])
         create_indexes(db)
 

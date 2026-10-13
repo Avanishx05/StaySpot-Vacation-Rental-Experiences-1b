@@ -1,12 +1,15 @@
-
 with daily_revenue as (
-   select property_id, date(created_at) as booking_date, sum(total_cost) as daily_revenue from bookings
-    where status in ('CONFIRMED', 'CHECKED_IN', 'COMPLETED') group by property_id, date(created_at)
+    select property_id, date(created_at) as booking_date, sum(total_cost) as daily_revenue
+    from bookings
+    group by property_id, date(created_at)
 ),
 moving_average as (
-    select property_id, booking_date, daily_revenue,avg(daily_revenue) over (partition by property_id
-            order by booking_date rows between 6 preceding and current row
-        ) as seven_day_moving_avg
+    select property_id, booking_date, daily_revenue,
+        sum(daily_revenue) over (
+            partition by property_id
+            order by booking_date
+            range between interval '6 days' preceding and current row
+        ) / 7.0 as seven_day_moving_avg
     from daily_revenue
 ),
 ranked_properties as (
