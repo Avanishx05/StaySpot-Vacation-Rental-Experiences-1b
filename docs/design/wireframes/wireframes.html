@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StaySpot Wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ---------- Design tokens (mirrors web/src/theme.js) ---------- */
+:root {
+  --ink: #12302C;        /* text: deep pine ink */
+  --forest-700: #133A35; /* pine dark: nav, hover */
+  --forest-600: #1E4D47; /* pine: primary, hero panels */
+  --forest-100: #DDF5E8; /* mint light: tinted surfaces, selected rows */
+  --sand-50:  #F3F7F5;   /* page background: mist */
+  --gold-400: #5FD39A;   /* mint: accent, highlights, live, nav pill */
+  --star: #F2B544;       /* star gold: ratings only */
+  --wood-100: #FDF0D5;   /* amber light: CHECKED_IN */
+  --lake-600: #2E8FB8;   /* pool blue: info, CONFIRMED, data marks */
+  --lake-100: #E1F1F8;
+  --wood-600: #5FD39A;   /* accent button = mint */
+  --white: #FFFFFF;
+  --gray-600: #5D716D;   /* secondary text */
+  --gray-300: #D3E0DB;   /* borders */
+  --gray-200: #E3ECE8;
+  --ok-600: #1E8F5E;  --ok-100: #E3F6EC;
+  --red-600:   #C2412F;  --red-100:   #FCEBE7;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(18,48,44,.06), 0 8px 24px rgba(18,48,44,.08);
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Outfit", "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #DCE6E2; font-family: var(--font); color: var(--ink); font-size: 14px; line-height: 1.45; }
+.sheet { max-width: 1360px; margin: 0 auto; padding: 32px 24px 80px; }
+.sheet > h1 { font-size: 26px; margin: 0 0 4px; }
+.sheet > p.lead { color: var(--gray-600); margin: 0 0 28px; }
+.label { font-size: 13px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: .06em; margin: 36px 0 10px; }
+.label span { text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+/* ---------- Browser frame ---------- */
+.frame { background: var(--sand-50); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(18,48,44,.15); width: 1280px; container-type: inline-size; }
+.frame.phone { width: 390px; border-radius: 28px; border: 10px solid #12302C; }
+.chrome { height: 34px; background: #E9F0ED; display: flex; align-items: center; gap: 6px; padding: 0 14px; border-bottom: 1px solid var(--gray-300); }
+.chrome i { width: 11px; height: 11px; border-radius: 50%; background: #C9D8D2; display: block; }
+.chrome .url { margin-left: 14px; background: #fff; border-radius: 6px; padding: 3px 12px; font-size: 12px; color: var(--gray-600); flex: 1; max-width: 520px; font-family: var(--mono); }
+.phone .chrome { height: 26px; justify-content: center; }
+.phone .chrome i { display: none; }
+.phone .chrome .url { margin: 0; flex: 0 1 220px; text-align: center; font-size: 11px; padding: 2px 8px; }
+
+/* ---------- App shell ---------- */
+.topnav { background: var(--white); border-bottom: 1px solid var(--gray-300); height: 60px; display: flex; align-items: center; padding: 0 28px; gap: 28px; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; color: var(--ink); }
+.brand .mark { width: 28px; height: 28px; border-radius: 8px; background: var(--forest-600); position: relative; }
+.brand .mark::after { content: ""; position: absolute; width: 11px; height: 11px; border-radius: 50%; background: var(--gold-400); right: 5px; top: 5px; }
+.navlinks { display: flex; gap: 4px; flex: 1; }
+.navlinks a { padding: 8px 12px; border-radius: var(--radius-sm); color: var(--gray-600); font-weight: 500; text-decoration: none; }
+.navlinks a.on { color: var(--forest-700); background: var(--forest-100); box-shadow: inset 0 -2px 0 var(--gold-400); }
+.actor { display: flex; align-items: center; gap: 10px; border: 1px solid var(--gray-300); border-radius: 999px; padding: 4px 12px 4px 4px; background: var(--white); }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--gold-400); color: var(--ink); display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.actor small { display: block; color: var(--gray-600); font-size: 11px; line-height: 1.1; }
+.actor b { font-size: 13px; line-height: 1.1; }
+.actor .chev { color: var(--gray-600); margin-left: 4px; }
+.burger { display: none; width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--gray-300); place-items: center; }
+.burger span { display: block; width: 16px; height: 2px; background: var(--ink); box-shadow: 0 5px 0 var(--ink), 0 -5px 0 var(--ink); }
+
+.page { padding: 28px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.page-head h2 { margin: 0; font-size: 24px; }
+.page-head p { margin: 4px 0 0; color: var(--gray-600); }
+.crumbs { font-size: 13px; color: var(--gray-600); margin-bottom: 6px; }
+.crumbs a { color: var(--forest-600); text-decoration: none; }
+
+/* ---------- Components ---------- */
+.card { background: var(--white); border: 1px solid var(--gray-300); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-h { padding: 16px 20px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.card-h h3 { margin: 0; font-size: 16px; }
+.card-h .sub { color: var(--gray-600); font-size: 12px; }
+.card-b { padding: 20px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 38px; padding: 0 16px; border-radius: var(--radius-sm); font: 600 14px var(--font); border: 1px solid transparent; cursor: pointer; white-space: nowrap; }
+.btn-primary { background: var(--forest-600); color: #fff; }
+.btn-secondary { background: #fff; color: var(--forest-700); border-color: var(--gray-300); }
+.btn-accent { background: var(--gold-400); color: var(--forest-700); }
+.btn-ghost { background: transparent; color: var(--forest-600); padding: 0 8px; }
+.btn-danger { background: #fff; color: var(--red-600); border-color: #EBB8AF; }
+.btn-sm { height: 30px; padding: 0 12px; font-size: 13px; }
+.btn[disabled] { opacity: .5; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > span { font-size: 12px; font-weight: 600; color: var(--gray-600); }
+.input { height: 38px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); background: #fff; padding: 0 12px; display: flex; align-items: center; gap: 8px; color: var(--ink); min-width: 0; }
+.input.ph { color: #93A6A1; }
+.input.sel::after { content: "▾"; margin-left: auto; color: var(--gray-600); font-size: 11px; }
+.input.focus { border-color: var(--forest-600); box-shadow: 0 0 0 3px var(--forest-100); }
+.filters { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--gray-200); }
+.tabs { display: flex; gap: 2px; background: var(--forest-100); padding: 4px; border-radius: 8px; }
+.tabs a { padding: 6px 14px; border-radius: 6px; color: var(--forest-700); font-weight: 500; text-decoration: none; }
+.tabs a.on { background: #fff; color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: .04em; padding: 10px 20px; background: var(--sand-50); border-bottom: 1px solid var(--gray-200); white-space: nowrap; }
+td { padding: 12px 20px; border-bottom: 1px solid var(--gray-200); white-space: nowrap; }
+tr.hover td { background: var(--forest-100); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); font-size: 12px; color: var(--gray-600); }
+.pager { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; color: var(--gray-600); font-size: 13px; }
+.pager .pages { display: flex; gap: 4px; }
+.pager .pages b, .pager .pages span { min-width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; border: 1px solid var(--gray-300); background: #fff; font-weight: 500; color: var(--ink); }
+.pager .pages b { background: var(--forest-600); color: #fff; border-color: var(--forest-600); }
+.badge { white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .03em; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.b-confirmed { background: var(--lake-100); color: #245A75; }
+.b-checkedin { background: var(--wood-100); color: #8A5A12; }
+.b-completed { background: #E3ECE8; color: #5E5448; }
+.b-debit { background: var(--red-100); color: var(--red-600); }
+.b-credit { background: var(--ok-100); color: var(--ok-600); }
+.pos { color: var(--ok-600); font-weight: 600; }
+.neg { color: var(--red-600); font-weight: 600; }
+.alert { display: flex; gap: 12px; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid; }
+.alert .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; color: #fff; }
+.alert b { display: block; margin-bottom: 2px; }
+.alert p { margin: 0; color: var(--ink); }
+.alert-error { background: var(--red-100); border-color: #EFC2BA; }
+.alert-error .ic { background: var(--red-600); }
+.alert-success { background: var(--ok-100); border-color: #C4DFC0; }
+.alert-success .ic { background: var(--ok-600); }
+.alert-info { background: var(--lake-100); border-color: #BCD6E2; }
+.alert-info .ic { background: var(--lake-600); }
+.stat { padding: 18px 20px; }
+.stat small { color: var(--gray-600); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.stat .v { font-size: 26px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.stat .d { color: var(--gray-600); font-size: 12px; }
+.grid { display: grid; gap: 20px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.side { grid-template-columns: 1.45fr 1fr; }
+.side-r { grid-template-columns: 1fr 360px; }
+.kv { display: grid; grid-template-columns: 140px 1fr; gap: 10px 16px; }
+.kv dt { color: var(--gray-600); }
+.kv dd { margin: 0; font-weight: 500; }
+.note { position: relative; background: var(--gold-400); color: var(--ink); font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 6px; display: inline-block; }
+.note.abs { position: absolute; z-index: 3; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.note::before { content: "✎ "; }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px; background: var(--forest-100); color: var(--forest-700); font-weight: 500; font-size: 13px; }
+.chip.y { background: var(--wood-100); color: #8A5A12; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-600); }
+.live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--gold-400); box-shadow: 0 0 0 3px rgba(95,211,154,.3); }
+.skel { background: linear-gradient(90deg, var(--gray-200), #F0F5F3, var(--gray-200)); border-radius: 4px; height: 12px; }
+.empty { text-align: center; padding: 40px 20px; color: var(--gray-600); }
+.empty .ic { width: 52px; height: 52px; border-radius: 50%; background: var(--forest-100); margin: 0 auto 12px; display: grid; place-items: center; color: var(--forest-600); font-size: 22px; }
+.empty b { display: block; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+.money { font-variant-numeric: tabular-nums; }
+.stepper { display: flex; align-items: center; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); height: 38px; background: #fff; }
+.stepper span { width: 38px; text-align: center; color: var(--forest-600); font-weight: 700; font-size: 16px; }
+.stepper b { flex: 1; text-align: center; border-left: 1px solid var(--gray-200); border-right: 1px solid var(--gray-200); line-height: 36px; }
+.price-line { display: flex; justify-content: space-between; padding: 8px 0; color: var(--gray-600); }
+.price-line.total { border-top: 1px dashed var(--gray-300); margin-top: 6px; padding-top: 12px; color: var(--ink); font-weight: 700; font-size: 16px; }
+.balances { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+.balances .arrow { color: var(--gray-600); font-size: 20px; }
+.balbox { border: 1px solid var(--gray-300); border-radius: var(--radius-sm); padding: 14px 16px; background: #fff; }
+.balbox small { color: var(--gray-600); font-size: 12px; font-weight: 600; }
+.balbox .v { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.balbox.after { border-color: var(--forest-600); background: var(--forest-100); }
+.trigger-card { border: 1px solid #9FE3C0; background: var(--wood-100); border-left: 4px solid var(--gold-400); border-radius: var(--radius-sm); padding: 14px 16px; }
+.trigger-card .t { flex-wrap: wrap; gap: 6px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; margin-bottom: 10px; }
+.trigger-card .kv { grid-template-columns: 120px 1fr; gap: 6px 12px; font-size: 13px; }
+.booking-row { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--gray-200); }
+.booking-row .meta { flex: 1; min-width: 0; }
+.booking-row .meta b { display: block; overflow: hidden; text-overflow: ellipsis; }
+.booking-row .meta small { color: var(--gray-600); }
+.flow { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--gray-600); padding: 10px 20px; background: var(--sand-50); border-bottom: 1px solid var(--gray-200); }
+.flow .badge { height: 20px; }
+.map { position: relative; height: 560px; background: #E6F0EB; overflow: hidden; border-radius: 0 0 var(--radius) var(--radius); }
+.map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map .zoom { position: absolute; left: 14px; top: 14px; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--gray-300); border-radius: 6px; }
+.map .zoom span { width: 30px; height: 30px; display: grid; place-items: center; font-weight: 700; color: var(--ink); }
+.map .zoom span + span { border-top: 1px solid var(--gray-300); }
+.map .legend { position: absolute; right: 14px; bottom: 14px; background: #fff; border: 1px solid var(--gray-300); border-radius: 8px; padding: 10px 12px; font-size: 12px; display: grid; gap: 6px; }
+.map .legend div { display: flex; align-items: center; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.hot-list .item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--gray-200); }
+.hot-list .item.sel { background: var(--forest-100); box-shadow: inset 3px 0 0 var(--forest-600); }
+.hot-list .rank { width: 26px; height: 26px; border-radius: 50%; background: var(--forest-100); color: var(--forest-700); display: grid; place-items: center; font-weight: 700; font-size: 12px; flex: none; }
+.hot-list .item .meta { flex: 1; }
+.hot-list .item small { color: var(--gray-600); display: block; }
+.hot-list .item .km { font-weight: 700; font-variant-numeric: tabular-nums; }
+.new-tag { background: var(--gold-400); color: var(--ink); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+.bars .row { display: grid; grid-template-columns: 110px 1fr 56px; align-items: center; gap: 10px; margin: 9px 0; }
+.bars .track { height: 18px; background: var(--sand-50); border-radius: 4px; overflow: hidden; }
+.bars .fill { height: 100%; background: var(--lake-600); border-radius: 4px; }
+.bars .fill.y { background: var(--star); }
+.bars .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--gray-600); font-size: 13px; }
+.stars { color: var(--star); letter-spacing: 2px; font-size: 20px; }
+.stars .off { color: var(--gray-300); }
+.amen-group h4 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--gray-600); display: flex; align-items: center; gap: 8px; }
+.amen-group h4 i { width: 22px; height: 22px; border-radius: 6px; background: var(--forest-100); color: var(--forest-600); display: grid; place-items: center; font-style: normal; font-size: 12px; }
+.amen-group ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.amen-group li { display: flex; align-items: center; gap: 8px; }
+.amen-group li::before { content: "✓"; color: var(--ok-600); font-weight: 700; }
+.amen-group.rules li::before { content: "!"; color: #8A5A12; background: var(--wood-100); width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; }
+.legend-inline { display: flex; gap: 16px; font-size: 12px; color: var(--gray-600); }
+.legend-inline span { display: inline-flex; align-items: center; gap: 6px; }
+.legend-inline i { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
+.rank-badge { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; font-weight: 700; background: var(--forest-100); color: var(--forest-700); }
+.rank-badge.top { background: var(--gold-400); color: var(--ink); }
+.swatch { border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--gray-300); }
+.swatch .c { height: 64px; }
+.swatch .t { padding: 8px 10px; font-size: 12px; background: #fff; }
+.swatch .t b { display: block; }
+.swatch .t span { font-family: var(--mono); color: var(--gray-600); }
+.type-row { display: flex; align-items: baseline; gap: 20px; padding: 8px 0; border-bottom: 1px solid var(--gray-200); }
+.type-row small { width: 120px; color: var(--gray-600); font-family: var(--mono); font-size: 11px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.stack { display: grid; gap: 14px; }
+.muted { color: var(--gray-600); }
+.spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; display: inline-block; }
+
+
+/* ---------- Immersive layer: pine nav, hero band with mountain edge and villa art ---------- */
+h2, .stat .v, .balbox .v, .brand, .card-h h3, .sheet > h1 { font-family: var(--display); letter-spacing: -.01em; }
+.topnav { background: var(--forest-700); border-bottom: 0; }
+.brand { color: #fff; font-weight: 800; }
+.brand .mark { background: none; width: 34px; height: 26px; border-radius: 0; }
+.brand .mark::after { content: none; }
+.navlinks a { color: #B9D3CC; }
+.navlinks a.on { color: var(--forest-700); background: var(--gold-400); box-shadow: none; border-radius: 999px; font-weight: 600; }
+.actor { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
+.actor b { color: #fff; } .actor small, .actor .chev { color: #9FC3B9; }
+.avatar { background: var(--gold-400); color: var(--forest-700); }
+.burger { border-color: rgba(255,255,255,.25); } .burger span { background: #fff; box-shadow: 0 5px 0 #fff, 0 -5px 0 #fff; }
+.page-head { position: relative; margin: -28px -28px 0; padding: 40px 28px 104px; background: linear-gradient(160deg, var(--forest-600) 0%, #19433E 100%); color: #fff; overflow: hidden; min-height: 210px; align-items: flex-start; }
+.page-head > * { position: relative; z-index: 2; }
+.page-head h2 { color: #fff; font-size: 34px; font-weight: 800; line-height: 1.1; }
+.page-head h2::after { content: ""; display: block; width: 48px; height: 4px; border-radius: 2px; background: var(--gold-400); margin-top: 12px; }
+.page-head p { color: #B9D3CC; max-width: 560px; font-size: 15px; margin-top: 12px; }
+.page-head p code { color: var(--gold-400); }
+.page-head .crumbs { color: #9FC3B9; } .page-head .crumbs a { color: var(--gold-400); }
+.page-head .field > span { color: #B9D3CC; }
+.page-head .tabs { background: rgba(255,255,255,.1); } .page-head .tabs a { color: #DDF5E8; } .page-head .tabs a.on { background: var(--gold-400); color: var(--forest-700); }
+.page-head .live { color: #DDF5E8; }
+.page-head .btn-secondary { background: transparent; color: #fff; border-color: rgba(255,255,255,.35); }
+.page-head .btn-primary { background: var(--gold-400); color: var(--forest-700); }
+.page-head .chip.y { background: rgba(255,255,255,.12); color: #DDF5E8; }
+.hero-art { position: absolute; right: 0; bottom: 40px; height: calc(100% - 52px); width: 520px; z-index: 1; pointer-events: none; }
+.hero-edge { position: absolute; left: 0; right: 0; bottom: -1px; height: 64px; width: 100%; z-index: 1; }
+.page-head + * { position: relative; z-index: 3; margin-top: -44px; }
+.page-head.has-ctrl .hero-art { opacity: .35; }
+.page-head ~ .stack, .page-head ~ .grid, .page-head ~ .card { position: relative; z-index: 3; }
+.card { border-color: transparent; }
+.card-h h3 { font-size: 17px; font-weight: 700; }
+.trigger-card { background: #E9FAF1; border-color: #9FE3C0; border-left-color: var(--gold-400); }
+.note { background: #FFE58A; color: var(--forest-700); }
+.rank-badge.top { background: var(--gold-400); color: var(--forest-700); }
+@container (max-width: 700px) {
+  .page-head { margin: -16px -16px 0; padding: 28px 16px 76px; min-height: 0; }
+  .page-head h2 { font-size: 26px; }
+  .hero-art { width: 260px; opacity: .35; }
+}
+
+/* ---------- Narrow container (phone) ---------- */
+@container (max-width: 700px) {
+  .topnav { padding: 0 14px; height: 56px; gap: 10px; }
+  .navlinks, .actor small, .actor .chev { display: none; }
+  .brand { flex: 1; font-size: 16px; }
+  .burger { display: grid; }
+  .actor { padding: 2px; border: 0; }
+  .actor b { display: none; }
+  .page { padding: 16px; }
+  .page-head { flex-direction: column; align-items: stretch; }
+  .page-head h2 { font-size: 20px; }
+  .side, .side-r, .g2, .g3, .g4 { grid-template-columns: minmax(0, 1fr); }
+  .grid > *, .stack > * { min-width: 0; }
+  .note.abs { display: none; }
+  .card-h { flex-wrap: wrap; }
+  .card-b { padding: 16px; }
+  .balances { grid-template-columns: 1fr; }
+  .balances .arrow { transform: rotate(90deg); justify-self: center; }
+  .filters { padding: 14px 16px; }
+  .filters .field { flex: 1 1 100%; }
+  .kv { grid-template-columns: 110px 1fr; }
+  .hide-phone { display: none !important; }
+}
+
+/* =========================================================
+   LO-FI LAYER: turns the mockups into rough Figma-style wireframes.
+   Greyscale, flat boxes, image placeholders, default sans font.
+   ========================================================= */
+:root {
+  --ink: #1E1E1E; --forest-700: #1E1E1E; --forest-600: #444; --forest-100: #EFEFEF;
+  --sand-50: #FFFFFF; --gold-400: #D9D9D9; --star: #8C8C8C; --wood-100: #F2F2F2; --wood-600: #D9D9D9;
+  --lake-600: #A6A6A6; --lake-100: #F5F5F5; --gray-600: #757575; --gray-300: #C4C4C4; --gray-200: #E0E0E0;
+  --ok-600: #1E1E1E; --ok-100: #F5F5F5; --red-600: #1E1E1E; --red-100: #F5F5F5;
+  --font: "Inter", system-ui, sans-serif; --display: "Inter", system-ui, sans-serif; --mono: "Inter", system-ui, sans-serif;
+  --shadow: none; --radius: 4px; --radius-sm: 4px;
+}
+body { background: #E5E5E5; }
+.sheet > h1, .sheet > p.lead { font-family: var(--font); }
+.label { font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0; color: #8C8C8C; margin: 40px 0 6px; }
+.label span { color: #A6A6A6; }
+.frame { background: #fff; border-radius: 0; box-shadow: none; outline: 1px solid #C4C4C4; }
+.frame.phone { border: 0; border-radius: 0; }
+.chrome { display: none; }
+h2, .stat .v, .balbox .v, .brand, .card-h h3 { font-family: var(--font); letter-spacing: 0; }
+.topnav { background: #fff; border-bottom: 1px solid #C4C4C4; }
+.brand { color: #1E1E1E; font-weight: 700; }
+.navlinks a { color: #757575; border-radius: 4px; }
+.navlinks a.on { background: #E0E0E0; color: #1E1E1E; box-shadow: none; border-radius: 4px; }
+.actor { background: #fff; border: 1px solid #C4C4C4; border-radius: 4px; }
+.actor b { color: #1E1E1E; } .actor small, .actor .chev { color: #8C8C8C; }
+.avatar { background: #D9D9D9; color: #444; }
+.burger { border: 1px solid #C4C4C4; border-radius: 4px; } .burger span { background: #444; box-shadow: 0 5px 0 #444, 0 -5px 0 #444; }
+.page-head { background: #F5F5F5 !important; color: #1E1E1E; border-bottom: 1px solid #C4C4C4; margin-bottom: 20px; padding-bottom: 28px; min-height: 0; }
+.page-head + * { margin-top: 0; }
+.page-head h2 { color: #1E1E1E; font-size: 30px; font-weight: 700; }
+.page-head h2::after { background: #BDBDBD; height: 4px; width: 48px; border-radius: 0; }
+.page-head p, .page-head .crumbs, .page-head .crumbs a, .page-head .field > span, .page-head .live { color: #757575; }
+.page-head p code { color: #444; }
+.page-head .tabs { background: #E0E0E0; border-radius: 4px; } .page-head .tabs a { color: #757575; border-radius: 3px; } .page-head .tabs a.on { background: #fff; color: #1E1E1E; box-shadow: none; }
+.page-head .btn-secondary { color: #1E1E1E; border-color: #C4C4C4; background: #fff; } .page-head .btn-primary { background: #444; color: #fff; }
+.page-head .chip.y { background: #E0E0E0; color: #444; }
+.hero-edge { display: none; }
+.img-ph { position: absolute; right: 28px; top: 24px; bottom: 24px; width: 320px; background: #E0E0E0; z-index: 1; display: grid; place-items: center; }
+.img-ph::before { content: ""; width: 44px; height: 34px; border: 3px solid #A6A6A6; border-radius: 4px;
+  background: radial-gradient(circle at 30% 35%, #A6A6A6 0 4px, transparent 5px), linear-gradient(135deg, transparent 55%, #A6A6A6 55%); }
+.img-ph span { position: absolute; bottom: 10px; font-size: 12px; color: #757575; }
+.page-head.has-ctrl .img-ph { display: none; }
+.card, .stat.card { border: 1px solid #C4C4C4; border-radius: 4px; box-shadow: none; }
+.card-h { border-bottom: 1px solid #E0E0E0; }
+.card-h h3 { font-size: 16px; }
+.btn { border-radius: 4px; font-weight: 500; }
+.btn-primary { background: #444; color: #fff; }
+.btn-accent { background: #BDBDBD; color: #1E1E1E; }
+.btn-secondary, .btn-danger { background: #fff; color: #1E1E1E; border-color: #C4C4C4; }
+.btn-ghost { color: #444; text-decoration: underline; }
+.input, .stepper { border-color: #C4C4C4; border-radius: 4px; }
+.input.focus { box-shadow: none; border-color: #757575; }
+.input.ph { color: #A6A6A6; }
+th { background: #F5F5F5; color: #757575; }
+td { border-bottom: 1px solid #E0E0E0; }
+tr.hover td { background: #F0F0F0; }
+.badge, .chip { background: #E0E0E0 !important; color: #444 !important; border: 0; border-radius: 4px; }
+.badge::before { background: #8C8C8C; }
+.alert { border: 1px solid #C4C4C4; border-radius: 4px; background: #F5F5F5; }
+.alert .ic { background: #8C8C8C !important; color: #fff; }
+.alert-error { border-left: 4px solid #444; }
+.balbox { border: 1px solid #C4C4C4; border-radius: 4px; }
+.balbox.after { background: #F0F0F0; border-color: #757575; }
+.trigger-card { background: #F5F5F5; border: 1px solid #C4C4C4; border-left: 4px solid #444; border-radius: 4px; }
+.booking-row[style] { background: #F5F5F5 !important; }
+.new-tag { background: #444; color: #fff; }
+.note { background: #FFF1A8 !important; color: #1E1E1E; font-weight: 500; font-size: 12px; border-radius: 2px; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+.skel { background: #E0E0E0; }
+.empty .ic { background: #E0E0E0; color: #757575; }
+.rank-badge, .rank-badge.top, .hot-list .rank { background: #E0E0E0; color: #444; }
+.hot-list .item.sel { background: #F0F0F0; box-shadow: inset 3px 0 0 #444; }
+.bars .track { background: #F0F0F0; }
+.bars .fill, .bars .fill.y { background: #A6A6A6; }
+.stars { color: #8C8C8C; } .stars .off { color: #D9D9D9; }
+.amen-group h4 i { background: #E0E0E0; color: #757575; }
+.amen-group li::before { color: #757575; } .amen-group.rules li::before { background: #E0E0E0; color: #757575; }
+.map, .map[style] { background: #F0F0F0; }
+.map .zoom, .map .legend { border-color: #C4C4C4; border-radius: 4px; }
+.map .legend .dot { opacity: 1 !important; } .map .legend div:nth-child(1) .dot { background: #1E1E1E !important; border-color: #1E1E1E !important; } .map .legend div:nth-child(2) .dot { background: #A6A6A6 !important; } .map .legend div:nth-child(3) .dot { background: #fff !important; border: 3px solid #1E1E1E; }
+.pos, .neg { color: #1E1E1E; }
+.legend-inline i { background: #444 !important; opacity: 1 !important; } .legend-inline span:first-child i { background: #D9D9D9 !important; }
+.live::before { background: #A6A6A6; box-shadow: none; }
+</style>
+</head>
+<body>
+<div class="sheet" id="sheet">
+  <h1>StaySpot: low-fidelity wireframes</h1>
+  <p class="lead">Assignment 2, Step 2. Six windows plus the shared page frame, actor switcher and booking status changer. Every field shown comes from an endpoint in <code>docs/api_endpoints.md</code>; pale yellow notes name the endpoint or the database object behind each part.</p>
+</div>
+
+<script>
+/* ---------- Sample data (shapes match docs/api_endpoints.md) ---------- */
+const NAV = ["Browse", "Book a stay", "Audit trail", "Analytics", "Map", "Reviews"];
+const inr = n => "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const inr0 = n => "₹" + n.toLocaleString("en-IN");
+const props = [
+  ["Lakeview Heritage Villa", 12450, 17.4239, 78.4738],
+  ["Banjara Hills Garden Loft", 6800, 17.4156, 78.4347],
+  ["Charminar Courtyard Home", 3200, 17.3616, 78.4747],
+  ["Jubilee Skyline Studio", 4750, 17.4326, 78.4071],
+  ["Gachibowli Tech Suite", 5400, 17.4401, 78.3489],
+  ["Golconda Fort Cottage", 2900, 17.3833, 78.4011],
+  ["Hussain Sagar Penthouse", 18900, 17.4239, 78.4738],
+  ["Secunderabad Family Flat", 3650, 17.4399, 78.4983],
+];
+
+function shell(active, url, body, opts = {}) {
+  const links = NAV.map(n => `<a class="${n === active ? "on" : ""}">${n}</a>`).join("");
+  return `
+  <div class="chrome"><i></i><i></i><i></i><div class="url">${url}</div></div>
+  <div class="topnav">
+    <div class="burger"><span></span></div>
+    <div class="brand"><div class="mark"></div>StaySpot</div>
+    <nav class="navlinks">${links}</nav>
+    <div class="actor"><div class="avatar">PS</div><div><small>Acting as guest</small><b>Priya Sharma</b></div><span class="chev">▾</span></div>
+  </div>
+  <div class="page">${body}</div>`;
+}
+
+function frame(id, title, sub, html, phone = false) {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `<div class="label">${title} <span>· ${sub}</span></div><div class="frame${phone ? " phone" : ""}" id="${id}">${html}</div>`;
+  document.getElementById("sheet").append(...wrap.childNodes);
+}
+
+/* ---------- 0. Style sheet ---------- */
+const sw = [["Pine (primary)", "#1E4D47"], ["Pine dark", "#133A35"], ["Mint (accent)", "#5FD39A"], ["Mint light", "#DDF5E8"], ["Pool blue", "#2E8FB8"], ["Pool light", "#E1F1F8"], ["Mist (background)", "#F3F7F5"], ["Surface", "#FFFFFF"], ["Ink (text)", "#12302C"], ["Star gold", "#F2B544"], ["Amber light", "#FDF0D5"], ["Danger", "#C2412F"]];
+frame("w00-style", "0. Style guide sheet", "Colours, type and the reusable components every screen is built from", `
+  <div class="page">
+  <div class="page-head"><div><h2>StaySpot look</h2><p>Deep pine and fresh mint, like a resort at dusk: pine for structure and action, mint for highlights, pool blue for data, on a soft mist background.</p></div></div>
+  <div class="grid" style="grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px">${sw.map(c => `<div class="swatch"><div class="c" style="background:${c[1]}"></div><div class="t"><b>${c[0]}</b><span>${c[1]}</span></div></div>`).join("")}</div>
+  <div class="grid g2">
+    <div class="card"><div class="card-h"><h3>Type · Inter</h3><span class="sub">numbers use tabular figures</span></div><div class="card-b">
+      <div class="type-row"><small>24 / 700</small><span style="font-size:24px;font-weight:700">Page title</span></div>
+      <div class="type-row"><small>16 / 700</small><span style="font-size:16px;font-weight:700">Card title</span></div>
+      <div class="type-row"><small>26 / 700</small><span style="font-size:26px;font-weight:700" class="money">₹61,070.00</span></div>
+      <div class="type-row"><small>14 / 400</small><span>Body text for descriptions and table cells.</span></div>
+      <div class="type-row"><small>12 / 600 caps</small><span style="font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.04em">Label / table header</span></div>
+      <div class="type-row" style="border:0"><small>JetBrains Mono</small><span class="mono">a71c4e02 · 409 ACTIVE_STAY_EXISTS</span></div>
+    </div></div>
+    <div class="card"><div class="card-h"><h3>Buttons, inputs, badges</h3></div><div class="card-b stack">
+      <div class="row"><span class="btn btn-primary">Book stay</span><span class="btn btn-secondary">Clear filters</span><span class="btn btn-accent">↻ Refresh view</span><span class="btn btn-danger">↻ Retry</span><span class="btn btn-ghost">View →</span><span class="btn btn-primary" disabled><span class="spinner"></span> Booking…</span></div>
+      <div class="grid g3" style="gap:12px"><label class="field"><span>Text</span><div class="input ph">⌕ Search…</div></label><label class="field"><span>Select</span><div class="input sel">Lakeview Villa</div></label><label class="field"><span>Focused</span><div class="input focus">villa</div></label></div>
+      <div class="row">${badge("CONFIRMED")}${badge("CHECKED_IN")}${badge("COMPLETED")}${badge("DEBIT")}${badge("CREDIT")}<span class="chip">📶 WiFi</span><span class="live">Live</span></div>
+      <div class="alert alert-success"><div class="ic">✓</div><div><b>Success alert</b><p>Result of an action that worked.</p></div></div>
+      <div class="alert alert-error"><div class="ic">!</div><div><b>Error alert</b><p>Plain-language message from <code>error.message</code>.</p></div></div>
+    </div></div>
+  </div></div>
+`.replace('<div class="page">', '<div class="chrome"><i></i><i></i><i></i><div class="url">docs/design/style_guide.md</div></div><div class="page">'));
+
+/* ---------- 1. Browse list ---------- */
+const browseRows = props.concat([["Madhapur Lake Retreat", 7300, 17.4483, 78.3915], ["Begumpet Garden Suite", 4100, 17.4447, 78.4664]]).map((p, i) => `
+  <tr class="${i === 2 ? "hover" : ""}">
+    <td><b>${p[0]}</b><div class="mono">${["3f2a","9c41","b7e0","1d88","64af","e215","70bc","a9d3","c0f1","5e7a"][i]}…-4e1c</div></td>
+    <td class="num money">${inr(p[1])}</td>
+    <td class="num mono">${p[2].toFixed(4)}</td>
+    <td class="num mono">${p[3].toFixed(4)}</td>
+    <td class="num">${[214, 187, 162, 158, 141, 133, 129, 120, 98, 91][i]}</td>
+    <td><span class="btn btn-ghost btn-sm">View →</span></td>
+  </tr>`).join("");
+frame("w01-browse-list", "1. Browse: list", "Properties tab; Guests and Bookings tabs use the same layout", shell("Browse", "stayspot.local/browse/properties?page=1&maxPrice=20000", `
+  <div class="page-head">
+    <div><h2>Browse</h2><p>Guests, properties and bookings from PostgreSQL, 20 rows per page.</p></div>
+    <div class="tabs"><a>Guests</a><a class="on">Properties</a><a>Bookings</a></div>
+  </div>
+  <div class="card" style="position:relative">
+    <span class="note abs" style="right:16px;top:-12px">GET /properties?page&limit&q&minPrice&maxPrice</span>
+    <div class="filters">
+      <label class="field" style="flex:1 1 320px"><span>Search by title</span><div class="input focus ph">⌕ Search properties by title…</div></label>
+      <label class="field" style="width:160px"><span>Min price / night</span><div class="input ph">₹ 0</div></label>
+      <label class="field" style="width:160px"><span>Max price / night</span><div class="input">₹ 20,000</div></label>
+      <span class="btn btn-secondary">Clear filters</span>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Property</th><th class="num">Base price / night</th><th class="num">Latitude</th><th class="num">Longitude</th><th class="num">Bookings</th><th></th></tr></thead>
+      <tbody>${browseRows}</tbody>
+    </table></div>
+    <div class="pager"><span>Showing <b>1–20</b> of <b>1,000</b> properties</span>
+      <div class="pages"><span>‹</span><b>1</b><span>2</span><span>3</span><span>…</span><span>50</span><span>›</span></div></div>
+  </div>
+  <p class="muted" style="margin-top:12px;font-size:12px">Search is debounced 300 ms. Page, search and filters live in the URL so a refresh keeps them. Clicking a row opens the detail view.</p>
+`));
+
+/* ---------- 2. Browse detail ---------- */
+const detailBookings = [
+  ["Priya Sharma", 3, 37350, "CHECKED_IN", "12 Oct 2026"],
+  ["Arjun Mehta", 2, 24900, "CONFIRMED", "11 Oct 2026"],
+  ["Sara Thomas", 5, 62250, "COMPLETED", "02 Oct 2026"],
+  ["Kabir Rao", 1, 12450, "COMPLETED", "28 Sep 2026"],
+  ["Neha Iyer", 4, 49800, "COMPLETED", "19 Sep 2026"],
+].map(b => `<tr><td>${b[0]}</td><td class="num">${b[1]}</td><td class="num money">${inr(b[2])}</td><td>${badge(b[3])}</td><td class="muted">${b[4]}</td></tr>`).join("");
+function badge(s) { const m = { CONFIRMED: "b-confirmed", CHECKED_IN: "b-checkedin", COMPLETED: "b-completed", DEBIT: "b-debit", CREDIT: "b-credit" }; return `<span class="badge ${m[s]}">${s.replace("_", " ")}</span>`; }
+frame("w02-browse-detail", "2. Browse: detail", "Property detail with its bookings; guest detail shows wallet balance and bookings the same way", shell("Browse", "stayspot.local/browse/properties/3f2a…-4e1c", `
+  <div class="page-head">
+    <div><div class="crumbs"><a>Browse</a> / <a>Properties</a> / Lakeview Heritage Villa</div><h2>Lakeview Heritage Villa</h2><p>Property · 3f2a9b10-7c55-4e1c-9a0d-1b2c3d4e5f60</p></div>
+    <div class="row"><span class="btn btn-secondary">See reviews</span><span class="btn btn-primary">Book this stay</span></div>
+  </div>
+  <div class="grid side-r">
+    <div class="card" style="position:relative">
+      <span class="note abs" style="right:16px;top:-12px">GET /properties/:id → property + bookings</span>
+      <div class="card-h"><h3>Recent bookings</h3><span class="sub">214 bookings · newest first</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Guest</th><th class="num">Nights</th><th class="num">Total cost</th><th>Status</th><th>Created</th></tr></thead>
+        <tbody>${detailBookings}</tbody></table></div>
+      <div class="pager"><span>1–5 of 214</span><div class="pages"><span>‹</span><b>1</b><span>2</span><span>›</span></div></div>
+    </div>
+    <div class="stack">
+      <div class="card"><div class="card-h"><h3>Details</h3></div><div class="card-b">
+        <dl class="kv"><dt>Base price</dt><dd class="money">${inr(12450)} / night</dd><dt>Latitude</dt><dd class="mono">17.4239</dd><dt>Longitude</dt><dd class="mono">78.4738</dd><dt>Gross revenue</dt><dd class="money">${inr(2654100)}</dd><dt>Nights booked</dt><dd>842</dd></dl>
+      </div></div>
+      <div class="card"><div class="map" style="height:180px;border-radius:var(--radius)">${miniMap()}</div></div>
+    </div>
+  </div>
+`));
+function miniMap() {
+  return `<svg viewBox="0 0 360 180" preserveAspectRatio="xMidYMid slice"><rect width="360" height="180" fill="#E6F0EB"/>
+  <path d="M0 120 C80 100 140 140 220 110 S330 90 360 100" stroke="#fff" stroke-width="10" fill="none"/>
+  <path d="M120 0 L140 180" stroke="#fff" stroke-width="7"/><path d="M0 50 L360 70" stroke="#fff" stroke-width="5"/>
+  <ellipse cx="250" cy="45" rx="45" ry="22" fill="#BFE3EE"/>
+  <circle cx="180" cy="90" r="9" fill="#1E4D47" stroke="#fff" stroke-width="3"/></svg>`;
+}
+
+/* ---------- 3. Transaction (success) ---------- */
+function bookingPanel(err) {
+  const rows = [
+    ["Lakeview Heritage Villa", "#a71c… · 3 nights · " + inr(37350), "CONFIRMED", `<span class="btn btn-primary btn-sm">Check in</span>`, true],
+    ["Charminar Courtyard Home", "#40be… · 2 nights · " + inr(6400), "CHECKED_IN", `<span class="btn btn-accent btn-sm">Check out</span>`],
+    ["Golconda Fort Cottage", "#9e02… · 1 night · " + inr(2900), "COMPLETED", `<span class="muted" style="font-size:12px">Done</span>`],
+  ];
+  return `<div class="card" style="position:relative">
+    <span class="note abs" style="right:16px;top:-12px">PATCH /bookings/:id/status</span>
+    <div class="card-h"><h3>My bookings</h3><span class="sub">Status changer</span></div>
+    <div class="flow">${badge("CONFIRMED")} → ${badge("CHECKED_IN")} → ${badge("COMPLETED")}<span style="margin-left:auto">One active stay per guest</span></div>
+    ${err ? `<div style="padding:14px 20px 0"><div class="alert alert-error"><div class="ic">!</div><div><b>You already have an active stay</b><p>You're checked in at Charminar Courtyard Home (booking #40be…). Check out there first, then check in here.</p><p class="mono" style="margin-top:6px">409 ACTIVE_STAY_EXISTS · idx_active_stay</p></div></div></div>` : ""}
+    ${rows.map(r => `<div class="booking-row" style="${r[4] ? "background:var(--wood-100)" : ""}"><div class="meta"><b>${r[0]}${r[4] ? '<span class="new-tag">NEW</span>' : ""}</b><small>${r[1]}</small></div>${badge(r[2])}${r[3]}</div>`).join("")}
+    <div class="pager"><span>Only the next valid status is offered.</span></div>
+  </div>`;
+}
+function bookForm(state, bal = 98420) {
+  const btn = state === "sending" ? `<span class="btn btn-primary" disabled style="width:100%"><span class="spinner"></span> Booking…</span>` : `<span class="btn btn-primary" style="width:100%;height:44px">Book stay · ${inr(37350)}</span>`;
+  return `<div class="card" style="position:relative">
+    <span class="note abs" style="right:16px;top:-12px">POST /bookings { guestId, propertyId, nights }</span>
+    <div class="card-h"><h3>Book a stay</h3><span class="sub">Guest: Priya Sharma</span></div>
+    <div class="card-b stack">
+      <label class="field"><span>Property</span><div class="input sel">Lakeview Heritage Villa · ${inr0(12450)}/night</div></label>
+      <label class="field"><span>Nights</span><div class="stepper"><span>−</span><b>3</b><span>+</span></div></label>
+      <div>
+        <div class="price-line"><span>${inr(12450)} × 3 nights</span><span class="money">${inr(37350)}</span></div>
+        <div class="price-line"><span>Wallet balance</span><span class="money ${bal < 37350 ? "neg" : ""}">${inr(bal)}</span></div>
+        <div class="price-line total"><span>Total</span><span class="money">${inr(37350)}</span></div>
+      </div>
+      ${btn}
+      <p class="muted" style="margin:0;font-size:12px">Price is worked out by the <code>create_booking</code> procedure from base price × nights; the form only previews it.</p>
+    </div></div>`;
+}
+const successResult = `<div class="card">
+  <div class="card-h"><h3>Booking confirmed</h3>${badge("CONFIRMED")}</div>
+  <div class="card-b stack">
+    <div class="alert alert-success"><div class="ic">✓</div><div><b>Your stay at Lakeview Heritage Villa is booked.</b><p>Booking #a71c4e02 · 3 nights · ${inr(37350)}</p></div></div>
+    <div class="balances">
+      <div class="balbox"><small>Balance before</small><div class="v">${inr(98420)}</div></div>
+      <div class="arrow">→</div>
+      <div class="balbox after"><small>Balance after</small><div class="v">${inr(61070)}</div></div>
+    </div>
+    <div class="trigger-card">
+      <div class="t"><span>New wallet_audit_logs row</span><span class="badge b-checkedin" style="text-transform:none">Recorded by the wallet trigger</span></div>
+      <dl class="kv"><dt>Time</dt><dd>13 Oct 2026, 10:42:18</dd><dt>Action</dt><dd>${badge("DEBIT")}</dd><dt>Amount changed</dt><dd class="neg money">−${inr(37350)}</dd><dt>Balance after</dt><dd class="money">${inr(61070)}</dd><dt>Booking</dt><dd class="mono">a71c4e02-…-77b1</dd></dl>
+    </div>
+  </div></div>`;
+const txBody = (result, err, bal) => `
+  <div class="page-head"><div><h2>Book a stay</h2><p>Runs the <code>create_booking</code> stored procedure in one transaction.</p></div></div>
+  <div class="grid side">
+    <div class="stack">${result}</div>
+    <div class="stack">${bookForm(null, bal)}${bookingPanel(err)}</div>
+  </div>`;
+frame("w03-transaction-success", "3. Book a stay: success", "Balance before/after and the audit row the trigger wrote", shell("Book a stay", "stayspot.local/book", txBody(successResult)));
+
+/* ---------- 4. Transaction (failures) ---------- */
+const failResult = `<div class="card">
+  <div class="card-h"><h3>Booking not made</h3><span class="sub">Nothing was charged</span></div>
+  <div class="card-b stack">
+    <div class="alert alert-error"><div class="ic">!</div><div><b>Not enough balance</b><p>Your wallet has ${inr(8200)} but 3 nights here cost ${inr(37350)}. Pick fewer nights or a cheaper stay.</p><p class="mono" style="margin-top:6px">422 INSUFFICIENT_BALANCE</p></div></div>
+    <div class="balances">
+      <div class="balbox"><small>Balance before</small><div class="v">${inr(8200)}</div></div>
+      <div class="arrow">→</div>
+      <div class="balbox"><small>Balance after</small><div class="v">${inr(8200)}</div><small style="font-weight:400">Unchanged: the procedure rolled back</small></div>
+    </div>
+  </div></div>`;
+frame("w04-transaction-errors", "4. Book a stay: failures", "Not enough balance when booking; second active stay blocked when checking in (Lakeview → Check in)", shell("Book a stay", "stayspot.local/book", txBody(failResult, true, 8200)));
+
+/* ---------- 5. Audit trail ---------- */
+const auditRows = [
+  ["13 Oct 2026, 10:42", "DEBIT", -37350, 61070, "a71c4e02"],
+  ["11 Oct 2026, 18:05", "CREDIT", 15000, 98420, "—"],
+  ["09 Oct 2026, 09:31", "DEBIT", -6400, 83420, "40be91f3"],
+  ["06 Oct 2026, 14:12", "DEBIT", -2900, 89820, "9e02c7aa"],
+  ["01 Oct 2026, 11:48", "CREDIT", 25000, 92720, "—"],
+  ["27 Sep 2026, 20:16", "DEBIT", -13600, 67720, "5d1f0b84"],
+  ["22 Sep 2026, 08:03", "CREDIT", 10000, 81320, "—"],
+  ["18 Sep 2026, 16:40", "DEBIT", -4750, 71320, "e8c3a210"],
+].map(r => `<tr><td>${r[0]}</td><td>${badge(r[1])}</td><td class="num money ${r[2] < 0 ? "neg" : "pos"}">${r[2] < 0 ? "−" : "+"}${inr(Math.abs(r[2]))}</td><td class="num money"><b>${inr(r[3])}</b></td><td class="mono">${r[4]}</td></tr>`).join("");
+frame("w05-audit", "5. Audit trail", "Read-only wallet history with running balance", shell("Audit trail", "stayspot.local/audit?guest=…&from=2026-09-13&to=2026-10-13", `
+  <div class="page-head"><div><h2>Audit trail</h2><p>Every wallet change, written by the trigger. Read-only: rows can't be edited or deleted.</p></div>
+    <span class="chip y">🔒 Append-only log</span></div>
+  <div class="grid g3" style="margin-bottom:20px">
+    <div class="card stat"><small>Current balance</small><div class="v">${inr(61070)}</div><div class="d">GET /guests/:id</div></div>
+    <div class="card stat"><small>Spent in period</small><div class="v neg">−${inr(65000)}</div><div class="d">5 debits</div></div>
+    <div class="card stat"><small>Added in period</small><div class="v pos">+${inr(50000)}</div><div class="d">3 credits</div></div>
+  </div>
+  <div class="card" style="position:relative">
+    <span class="note abs" style="right:16px;top:-12px">GET /guests/:id/audit?from&to&page&limit</span>
+    <div class="filters">
+      <label class="field" style="flex:1 1 280px"><span>Guest</span><div class="input sel">Priya Sharma (you)</div></label>
+      <label class="field" style="width:180px"><span>From</span><div class="input">📅 13 Sep 2026</div></label>
+      <label class="field" style="width:180px"><span>To</span><div class="input">📅 13 Oct 2026</div></label>
+      <span class="btn btn-secondary">Last 30 days</span>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Time</th><th>Action</th><th class="num">Amount</th><th class="num">Running balance</th><th>Booking</th></tr></thead>
+      <tbody>${auditRows}</tbody></table></div>
+    <div class="pager"><span>Showing <b>1–8</b> of <b>8</b> entries</span><div class="pages"><span>‹</span><b>1</b><span>›</span></div></div>
+  </div>
+`));
+
+/* ---------- 6. Analytics ---------- */
+function maChart() {
+  const W = 760, H = 260, pl = 56, pr = 16, pt = 16, pb = 30, n = 30;
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const daily = Array.from({ length: n }, (_, i) => Math.round(18000 + 14000 * Math.sin(i / 4) + rnd() * 26000));
+  daily[9] = 0; daily[20] = 0;
+  const ma = daily.map((_, i) => daily.slice(Math.max(0, i - 6), i + 1).reduce((a, b) => a + b, 0) / 7);
+  const max = 70000, x = i => pl + (i + .5) * (W - pl - pr) / n, y = v => pt + (H - pt - pb) * (1 - v / max);
+  const bw = (W - pl - pr) / n * .62;
+  let g = "";
+  for (let v = 0; v <= max; v += 17500) g += `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="#E3ECE8"/><text x="${pl - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#5D716D">₹${v / 1000}k</text>`;
+  const bars = daily.map((d, i) => `<rect x="${x(i) - bw / 2}" y="${y(d)}" width="${bw}" height="${y(0) - y(d)}" rx="2" fill="#2E8FB8" opacity=".22"/>`).join("");
+  const line = ma.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+  const labels = [0, 7, 14, 21, 29].map(i => `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#5D716D">${["14 Sep", "21 Sep", "28 Sep", "05 Oct", "13 Oct"][[0, 7, 14, 21, 29].indexOf(i)]}</text>`).join("");
+  const hi = 24;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}${bars}<path d="${line}" fill="none" stroke="#1E4D47" stroke-width="2.5" stroke-linejoin="round"/>${labels}
+    <line x1="${x(hi)}" x2="${x(hi)}" y1="${pt}" y2="${y(0)}" stroke="#12302C" stroke-dasharray="3 3" opacity=".4"/>
+    <circle cx="${x(hi)}" cy="${y(ma[hi])}" r="5" fill="#5FD39A" stroke="#12302C" stroke-width="1.5"/>
+    <g transform="translate(${x(hi) - 168},${y(ma[hi]) - 64})"><rect width="156" height="52" rx="6" fill="#12302C"/><text x="10" y="18" font-size="11" fill="#A9DCC4">08 Oct 2026</text><text x="10" y="34" font-size="12" fill="#fff">Daily: ${inr0(daily[hi])}</text><text x="10" y="47" font-size="12" fill="#5FD39A">7-day avg: ${inr0(Math.round(ma[hi]))}</text></g></svg>`;
+}
+const ranking = [[1, "Hussain Sagar Penthouse", 41820], [2, "Lakeview Heritage Villa", 38560], [3, "Banjara Hills Garden Loft", 21400], [3, "Gachibowli Tech Suite", 21400], [4, "Jubilee Skyline Studio", 18215], [5, "Secunderabad Family Flat", 12030]]
+  .map(r => `<tr><td><span class="rank-badge ${r[0] === 1 ? "top" : ""}">${r[0]}</span></td><td><b>${r[1]}</b></td><td class="num money">${inr(r[2])}</td></tr>`).join("");
+frame("w06-analytics", "6. Analytics", "Moving-average chart, DENSE_RANK table and materialized-view summary", shell("Analytics", "stayspot.local/analytics?property=…&from=2026-09-14&to=2026-10-13", `
+  <div class="page-head"><div><h2>Analytics</h2><p>Revenue per property from the Part A window query and the <code>property_summary</code> view.</p></div></div>
+  <div class="card" style="margin-bottom:20px;position:relative">
+    <span class="note abs" style="right:16px;top:-12px">GET /analytics/summary · POST /analytics/summary/refresh</span>
+    <div class="card-h"><div><h3>Summary <span class="sub">from materialized view property_summary</span></h3></div>
+      <div class="row"><span class="muted" style="font-size:13px">Last refreshed: <b style="color:var(--ink)">13 Oct 2026, 10:15</b></span><span class="btn btn-accent btn-sm">↻ Refresh view</span></div></div>
+    <div class="grid g4" style="gap:0">
+      <div class="stat"><small>Gross revenue</small><div class="v">₹1,24,86,350</div><div class="d">All properties</div></div>
+      <div class="stat" style="border-left:1px solid var(--gray-200)"><small>Nights booked</small><div class="v">1,99,812</div><div class="d">sum(nights)</div></div>
+      <div class="stat" style="border-left:1px solid var(--gray-200)"><small>Bookings</small><div class="v">50,000</div><div class="d">count(bookings)</div></div>
+      <div class="stat" style="border-left:1px solid var(--gray-200)"><small>Top property</small><div class="v" style="font-size:18px;margin-top:8px">Hussain Sagar Penthouse</div><div class="d">₹4,18,200 gross</div></div>
+    </div>
+  </div>
+  <div class="grid side">
+    <div class="card" style="position:relative">
+      <span class="note abs" style="right:16px;top:-12px">GET /analytics/moving-average?propertyId&from&to</span>
+      <div class="card-h"><h3>7-day moving average revenue</h3><div class="legend-inline"><span><i style="background:#2E8FB8;opacity:.3;height:10px"></i>Daily revenue</span><span><i style="background:#1E4D47"></i>7-day average</span></div></div>
+      <div class="filters">
+        <label class="field" style="flex:1 1 240px"><span>Property</span><div class="input sel">Lakeview Heritage Villa</div></label>
+        <label class="field" style="width:150px"><span>From</span><div class="input">14 Sep 2026</div></label>
+        <label class="field" style="width:150px"><span>To</span><div class="input">13 Oct 2026</div></label>
+      </div>
+      <div class="card-b">${maChart()}</div>
+    </div>
+    <div class="card" style="position:relative">
+      <span class="note abs" style="right:16px;top:-12px">GET /analytics/ranking?date&limit</span>
+      <div class="card-h"><h3>Property ranking</h3><span class="sub">DENSE_RANK by 7-day avg</span></div>
+      <div class="filters"><label class="field" style="flex:1"><span>As of</span><div class="input">13 Oct 2026</div></label><label class="field" style="width:100px"><span>Show</span><div class="input sel">Top 10</div></label></div>
+      <div class="table-wrap"><table><thead><tr><th>Rank</th><th>Property</th><th class="num">7-day avg</th></tr></thead><tbody>${ranking}</tbody></table></div>
+      <div class="pager"><span>Ties share a rank (both #3), the next rank is #4.</span></div>
+    </div>
+  </div>
+`));
+
+/* ---------- 7. Map ---------- */
+const hotspots = [
+  [0.6, 312, 480, 330, 1], [1.1, 214, 470, 250, 0], [1.8, 187, 330, 210, 0], [2.4, 96, 560, 380, 1],
+  [2.9, 143, 250, 360, 0], [3.5, 61, 520, 170, 0], [4.2, 38, 640, 300, 0], [4.7, 22, 220, 160, 0],
+];
+function bigMap() {
+  const cx = 420, cy = 280, R = 220;
+  const pins = hotspots.map((h, i) => `<circle cx="${h[2]}" cy="${h[3]}" r="${8 + h[1] / 22}" fill="${i === 0 ? "#5FD39A" : "#2E8FB8"}" opacity="${i === 0 ? .95 : .7}" stroke="#fff" stroke-width="2"/><text x="${h[2]}" y="${h[3] + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="${i === 0 ? "#12302C" : "#fff"}">${h[1]}</text>`).join("");
+  return `<svg viewBox="0 0 840 560" preserveAspectRatio="xMidYMid slice">
+    <rect width="840" height="560" fill="#E6F0EB"/>
+    <path d="M-20 400 C180 330 300 470 520 380 S760 300 860 340" stroke="#fff" stroke-width="16" fill="none"/>
+    <path d="M300 -10 L360 580" stroke="#fff" stroke-width="12"/><path d="M-10 120 L860 200" stroke="#fff" stroke-width="9"/>
+    <path d="M600 -10 C560 200 640 360 590 580" stroke="#fff" stroke-width="8" fill="none"/>
+    <ellipse cx="540" cy="110" rx="90" ry="48" fill="#BFE3EE"/><text x="540" y="114" text-anchor="middle" font-size="12" fill="#5D716D">Hussain Sagar</text>
+    <rect x="120" y="420" width="120" height="70" rx="10" fill="#CBEBD7"/>
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="#1E4D47" fill-opacity=".06" stroke="#1E4D47" stroke-width="2" stroke-dasharray="8 6"/>
+    <text x="${cx + R - 6}" y="${cy - 6}" text-anchor="end" font-size="12" font-weight="600" fill="#133A35">5 km</text>
+    <line x1="${cx}" y1="${cy}" x2="${cx + R}" y2="${cy}" stroke="#133A35" stroke-dasharray="3 3"/>
+    ${pins}
+    <g><circle cx="${cx}" cy="${cy}" r="12" fill="#12302C" stroke="#5FD39A" stroke-width="4"/></g>
+    <g transform="translate(${hotspots[0][2] + 26},${hotspots[0][3] - 10})"><rect width="160" height="54" rx="8" fill="#fff" stroke="#D3E0DB"/><text x="12" y="20" font-size="12" font-weight="700" fill="#12302C">Hotspot #1</text><text x="12" y="38" font-size="12" fill="#5D716D">312 searches · 0.6 km</text></g>
+  </svg>`;
+}
+const hotList = hotspots.map((h, i) => `<div class="item ${i === 0 ? "sel" : ""}"><div class="rank">${i + 1}</div><div class="meta"><b>${(17.385 + (i - 3) * 0.004).toFixed(3)}, ${(78.4867 + (i - 4) * 0.005).toFixed(3)}${h[4] ? '<span class="new-tag">NEW</span>' : ""}</b><small>${h[1]} searches</small></div><div class="km">${h[0].toFixed(1)} km</div></div>`).join("");
+frame("w07-map", "7. Map: search hotspots", "$geoNear around a chosen origin, polled every 5 s", shell("Map", "stayspot.local/map?origin=…", `
+  <div class="page-head"><div><h2>Search hotspots</h2><p>Where guests are dropping search pins within 5 km of a property.</p></div>
+    <span class="live">Live · updated 3 s ago</span></div>
+  <div class="grid side-r">
+    <div class="card" style="position:relative">
+      <span class="note abs" style="right:16px;top:-12px">GET /map/hotspots?lng&lat&radiusKm=5 (polled)</span>
+      <div class="filters">
+        <label class="field" style="flex:1 1 300px"><span>Origin</span><div class="input sel">Lakeview Heritage Villa · 17.4239, 78.4738</div></label>
+        <span class="muted" style="font-size:12px;padding-bottom:10px">or click anywhere on the map</span>
+      </div>
+      <div class="map">${bigMap()}
+        <div class="zoom"><span>+</span><span>−</span></div>
+        <div class="legend"><div><span class="dot" style="background:#12302C;border:2px solid #5FD39A"></span>Origin</div><div><span class="dot" style="background:#2E8FB8;opacity:.7"></span>Hotspot (size = searches)</div><div><span class="dot" style="background:#5FD39A"></span>Selected</div></div>
+      </div>
+    </div>
+    <div class="card hot-list" style="position:relative">
+      <span class="note abs" style="right:16px;top:-12px">GET /map/origins</span>
+      <div class="card-h"><h3>Hotspots</h3><span class="sub">8 within 5 km · by distance</span></div>
+      ${hotList}
+      <div class="pager"><span>Click a hotspot to highlight it on the map.</span></div>
+    </div>
+  </div>
+`));
+
+/* ---------- 8. Reviews + amenities ---------- */
+const dist = [[5, 14820], [4.5, 9310], [4, 12040], [3, 6210], [2, 3120], [1, 2460]];
+const distBars = dist.map(d => `<div class="row"><span>${d[0]} ★</span><div class="track"><div class="fill y" style="width:${d[1] / 148.2}%"></div></div><span class="n">${d[1].toLocaleString("en-IN")}</span></div>`).join("");
+const tags = [["central location", 9120], ["near metro", 8840], ["great view", 7615], ["family friendly", 7020], ["quiet street", 6480]];
+const tagBars = tags.map(t => `<div class="row"><span>${t[0]}</span><div class="track"><div class="fill" style="width:${t[1] / 91.2}%"></div></div><span class="n">${t[1].toLocaleString("en-IN")}</span></div>`).join("");
+frame("w08-reviews", "8. Reviews + amenities", "$facet charts and one PropertyAmenities document, readable", shell("Reviews", "stayspot.local/reviews?property=…", `
+  <div class="page-head"><div><h2>Reviews &amp; amenities</h2><p>Review analytics from MongoDB PropertyReviews and the property's amenities catalog.</p></div>
+    <label class="field" style="width:340px"><span>Property</span><div class="input sel">Lakeview Heritage Villa</div></label></div>
+  <div class="grid" style="grid-template-columns:280px 1fr 1fr;margin-bottom:20px;position:relative">
+    <span class="note abs" style="left:300px;top:-12px">GET /reviews/facets?propertyId</span>
+    <div class="card stat" style="display:flex;flex-direction:column;justify-content:center"><small>Average rating</small><div class="v" style="font-size:40px">4.2<span class="muted" style="font-size:16px;font-weight:500"> / 5</span></div><div class="stars">★★★★<span class="off">★</span></div><div class="d">from 44,840 reviews</div></div>
+    <div class="card"><div class="card-h"><h3>Rating distribution</h3><span class="sub">ratingDistribution</span></div><div class="card-b bars">${distBars}</div></div>
+    <div class="card"><div class="card-h"><h3>Top tags</h3><span class="sub">topTags ($unwind location_tags)</span></div><div class="card-b bars">${tagBars}</div></div>
+  </div>
+  <div class="card" style="position:relative">
+    <span class="note abs" style="right:16px;top:-12px">GET /amenities/:propertyId</span>
+    <div class="card-h"><h3>Amenities catalog</h3><span class="sub">PropertyAmenities document · flexible fields</span></div>
+    <div class="card-b grid g3">
+      <div class="amen-group"><h4><i>✦</i>Amenities</h4><div class="chips"><span class="chip">📶 WiFi</span><span class="chip">🏊 Pool</span><span class="chip">🍳 Kitchen</span><span class="chip">🅿️ Free Parking</span><span class="chip">❄️ Air Conditioning</span><span class="chip">💻 Workspace</span></div></div>
+      <div class="amen-group rules"><h4><i>§</i>House rules</h4><ul><li>No smoking</li><li>Quiet hours 10pm–7am</li><li>Check-in after 2pm</li></ul></div>
+      <div class="amen-group"><h4><i>♿</i>Accessibility</h4><ul><li>Step-free entrance</li><li>Wide doorways</li><li>Ground-floor bedroom</li></ul></div>
+    </div>
+  </div>
+`));
+
+/* ---------- 9. States ---------- */
+const skelRows = Array.from({ length: 5 }, () => `<tr><td><div class="skel" style="width:70%"></div></td><td><div class="skel" style="width:50%;margin-left:auto"></div></td><td><div class="skel" style="width:60%"></div></td></tr>`).join("");
+frame("w09-states", "9. Loading, empty and error", "Shared components every window uses: Loading, Empty, ErrorState", shell("Browse", "stayspot.local/browse/bookings?status=CHECKED_IN&guestId=…", `
+  <div class="page-head"><div><h2>Page states</h2><p>Never a blank page: every data block shows one of these while it isn't ready.</p></div></div>
+  <div class="grid g3">
+    <div class="card"><div class="card-h"><h3>Loading</h3><span class="sub">&lt;Loading /&gt; skeleton rows</span></div>
+      <table><thead><tr><th>Booking</th><th class="num">Total</th><th>Status</th></tr></thead><tbody>${skelRows}</tbody></table></div>
+    <div class="card"><div class="card-h"><h3>Empty</h3><span class="sub">&lt;Empty /&gt;</span></div>
+      <div class="empty"><div class="ic">⌕</div><b>No bookings match your filters</b>Try another status or clear the search.<div style="margin-top:14px"><span class="btn btn-secondary btn-sm">Clear filters</span></div></div></div>
+    <div class="card"><div class="card-h"><h3>Error</h3><span class="sub">&lt;ErrorState /&gt;</span></div>
+      <div class="card-b"><div class="alert alert-error"><div class="ic">!</div><div><b>Couldn't load bookings</b><p>The server didn't respond. Check the API is running, then try again.</p><div style="margin-top:12px"><span class="btn btn-danger btn-sm">↻ Retry</span></div></div></div>
+      <p class="muted" style="font-size:12px;margin:12px 0 0">Shows <code>error.message</code> from <code>{ error: { code, message } }</code>.</p></div></div>
+  </div>
+`));
+
+/* ---------- 10. Actor switcher open ---------- */
+frame("w10-actor", "10. Actor switcher", "Header dropdown, replaces login for the demo", shell("Book a stay", "stayspot.local/book", `
+  <div style="position:relative;height:470px">
+    <div class="card" style="position:absolute;right:0;top:-18px;width:340px;z-index:2">
+      <span class="note abs" style="left:16px;top:-12px">GET /actors</span>
+      <div class="card-b" style="padding:14px"><div class="input ph">⌕ Find a guest</div></div>
+      ${[["PS", "Priya Sharma", 61070, 1], ["AM", "Arjun Mehta", 8200], ["ST", "Sara Thomas", 142300], ["KR", "Kabir Rao", 54900], ["NI", "Neha Iyer", 97750]].map(a => `<div class="booking-row" style="${a[3] ? "background:var(--forest-100)" : ""}"><div class="avatar" style="${a[3] ? "" : "background:var(--forest-100);color:var(--forest-700)"}">${a[0]}</div><div class="meta"><b>${a[1]}</b><small>Wallet ${inr(a[2])}</small></div>${a[3] ? '<span style="color:var(--forest-600);font-weight:700">✓</span>' : ""}</div>`).join("")}
+      <div class="pager"><span>Choice is saved in this browser.</span></div>
+    </div>
+    <div class="muted" style="max-width:560px">
+      <h3 style="color:var(--ink);margin:0 0 8px">Who am I acting as?</h3>
+      <p style="margin:0">The switcher lists demo guests with their wallet balance. Picking one updates every page that uses <code>useActor()</code>: the booking form, My bookings and the Audit trail default to that guest. Guest <b>Arjun Mehta</b> has a low balance so the "Not enough balance" error is easy to demo.</p>
+    </div>
+  </div>
+`));
+
+/* ---------- 11. Phone ---------- */
+frame("w11-phone-book", "11. Phone: Book a stay", "Same page at 390 px: nav collapses to a menu, columns stack", shell("Book a stay", "stayspot.local/book", `
+  <div class="page-head"><div><h2>Book a stay</h2></div></div>
+  <div class="stack">${bookForm()}${successResult}</div>
+`), true);
+frame("w12-phone-browse", "12. Phone: Browse", "Filters stack, the table scrolls sideways", shell("Browse", "stayspot.local/browse", `
+  <div class="page-head"><div><h2>Browse</h2></div><div class="tabs"><a>Guests</a><a class="on">Properties</a><a>Bookings</a></div></div>
+  <div class="card">
+    <div class="filters"><label class="field"><span>Search by title</span><div class="input ph">⌕ Search by title…</div></label></div>
+    <div class="table-wrap"><table><thead><tr><th>Property</th><th class="num">Price / night</th><th class="num">Bookings</th></tr></thead><tbody>
+    ${props.slice(0, 6).map((p, i) => `<tr><td><b>${p[0]}</b></td><td class="num">${inr0(p[1])}</td><td class="num">${[214, 187, 162, 158, 141, 133][i]}</td></tr>`).join("")}</tbody></table></div>
+    <div class="pager"><span>1–20 of 1,000</span><div class="pages"><span>‹</span><b>1</b><span>›</span></div></div>
+  </div>
+`), true);
+
+/* ---------- Immersive decorations ---------- */
+const LOGO = `<svg viewBox="0 0 34 26" width="34" height="26"><path d="M0 26 L0 12 L9 4 L17 11 L25 2 L34 10 L34 26 Z" fill="#5FD39A"/><path d="M10 26 V18 H16 V26" fill="#133A35"/></svg>`;
+const ART = `<svg class="hero-art" viewBox="0 0 560 240" preserveAspectRatio="xMaxYMax slice">
+  <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E4D47" stop-opacity="0"/><stop offset="1" stop-color="#2A6A60"/></linearGradient>
+  <linearGradient id="pool" x1="0" x2="1"><stop offset="0" stop-color="#4FB6DE"/><stop offset="1" stop-color="#2E8FB8"/></linearGradient></defs>
+  <circle cx="470" cy="84" r="22" fill="#5FD39A" opacity=".25"/>
+  <path d="M60 240 L170 120 L230 170 L320 80 L420 160 L480 110 L560 170 L560 240 Z" fill="#2A6A60"/>
+  <path d="M120 240 L240 150 L300 185 L380 128 L470 190 L560 150 L560 240 Z" fill="#337A6E"/>
+  <g transform="translate(250,118)">
+    <rect x="0" y="40" width="210" height="62" fill="#F3F7F5"/>
+    <rect x="-14" y="30" width="238" height="12" fill="#FFFFFF"/>
+    <rect x="120" y="4" width="104" height="28" fill="#E3ECE8"/><rect x="112" y="0" width="120" height="8" fill="#FFFFFF"/>
+    <rect x="12" y="52" width="60" height="44" fill="#133A35"/><rect x="82" y="52" width="40" height="44" fill="#1E4D47"/>
+    <rect x="134" y="52" width="66" height="44" fill="#133A35"/><rect x="140" y="12" width="70" height="16" fill="#1E4D47"/>
+    <rect x="16" y="56" width="22" height="36" fill="#5FD39A" opacity=".18"/>
+  </g>
+  <rect x="210" y="220" width="350" height="20" fill="#E3ECE8"/>
+  <path d="M232 222 H560 V240 H214 Z" fill="url(#pool)"/>
+  <path d="M260 230 h40 M330 233 h60 M430 229 h50" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>
+  <g transform="translate(212,130)" fill="#5FD39A"><rect x="9" y="20" width="4" height="72" fill="#133A35"/><path d="M11 22 C-10 10 -18 24 -20 30 C-6 20 4 22 11 22 Z M11 22 C30 6 40 18 42 26 C28 18 20 20 11 22 Z M11 22 C4 0 18 -6 24 -6 C16 4 14 12 11 22 Z"/></g>
+</svg>`;
+const EDGE = `<svg class="hero-edge" viewBox="0 0 1280 64" preserveAspectRatio="none"><path d="M0 64 L0 40 L110 14 L200 44 L320 4 L470 46 L560 22 L700 50 L820 10 L960 44 L1060 26 L1180 48 L1280 20 L1280 64 Z" fill="#5FD39A" opacity=".55"/><path d="M0 64 L0 52 L140 30 L260 56 L380 26 L520 58 L640 36 L780 60 L900 30 L1040 56 L1160 38 L1280 54 L1280 64 Z" fill="#F3F7F5"/></svg>`;
+document.querySelectorAll(".brand .mark").forEach(m => m.innerHTML = LOGO);
+document.querySelectorAll(".page-head").forEach(h => {
+  if (h.closest("#w00-style")) return;
+  if (h.querySelector(".tabs, .field, .btn, .chip, .live")) h.classList.add("has-ctrl");
+  h.insertAdjacentHTML("beforeend", ART + EDGE);
+});
+
+/* ---------- Lo-fi layer: greys, image placeholders ---------- */
+document.querySelectorAll(".hero-art").forEach(a => a.outerHTML = `<div class="img-ph"><span>Hero image</span></div>`);
+document.querySelectorAll(".brand .mark").forEach(m => m.innerHTML = `<svg viewBox="0 0 34 26" width="34" height="26"><rect x="1" y="1" width="32" height="24" rx="3" fill="#D9D9D9"/><text x="17" y="17" font-size="10" text-anchor="middle" fill="#757575" font-family="Inter">LOGO</text></svg>`);
+const GREYS = { "#1E4D47": "#444444", "#133A35": "#444444", "#2E8FB8": "#A6A6A6", "#5FD39A": "#FFFFFF", "#F2B544": "#8C8C8C", "#12302C": "#1E1E1E",
+  "#E6F0EB": "#F0F0F0", "#BFE3EE": "#E0E0E0", "#CBEBD7": "#E6E6E6", "#E3ECE8": "#E0E0E0", "#5D716D": "#757575", "#A9DCC4": "#D9D9D9" };
+document.querySelectorAll(".frame svg").forEach(svg => {
+  let h = svg.innerHTML;
+  for (const [a, b] of Object.entries(GREYS)) h = h.split(a).join(b);
+  svg.innerHTML = h;
+  svg.querySelectorAll("text").forEach(t => t.setAttribute("font-family", "Inter, sans-serif"));
+});
+document.querySelectorAll(".frame .map svg circle[fill='#FFFFFF']").forEach(c => { if (+c.getAttribute("r") > 12) { c.setAttribute("stroke", "#1E1E1E"); c.setAttribute("stroke-width", "3"); } });
+document.querySelectorAll(".frame .map svg text").forEach(t => { if (t.getAttribute("fill") === "#fff") t.setAttribute("fill", "#1E1E1E"); });
+{ const f = document.getElementById("w00-style"); if (f) { f.previousElementSibling.remove(); f.remove(); } }
+/* Figma-style frame names */
+document.querySelectorAll(".label").forEach(l => { const f = l.nextElementSibling; if (f && f.classList.contains("frame")) l.innerHTML = l.innerHTML.replace(/^(\d+)\.\s*/, "") + (f.classList.contains("phone") ? " <span>· Mobile 390</span>" : " <span>· Desktop 1280</span>"); });
+</script>
+</body>
+</html>
