@@ -48,6 +48,57 @@ npm install
 npm run mongo:setup && npm run mongo:workflow3 && npm run mongo:workflow4
 ```
 
+# Assignment 2: running the web app
+
+Requirements: PostgreSQL 14+ (with the `pg_trgm` and `uuid-ossp` contrib extensions), Node 20+, MongoDB (only for screens 3.5-3.6), Python 3.10+.
+
+```bash
+cp .env.example .env                         # PG_*, MONGODB_URI, API_PORT
+createdb stayspot
+for f in sql/0*.sql; do psql -d stayspot -v ON_ERROR_STOP=1 -f "$f"; done
+pip install -r data_generation/requirements.txt
+python data_generation/postgres_seeder.py    # ~30 s: 10k guests, 1k properties, 50k bookings, 100k audit rows
+cd web && npm install && npm run build      # React front end -> web/dist
+cd ../api && npm install && npm start        # API + built front end on http://localhost:4000
+```
+Open http://localhost:4000. For front-end development run the API (`cd api && npm start`) and, in another terminal, `cd web && npm run dev`: Vite serves http://localhost:5173 with hot reload and proxies `/api` to port 4000. To start over: `dropdb stayspot && createdb stayspot` and repeat (the audit table is append-only, so it cannot be truncated).
+Connect the API as a **non-superuser** in real use: a PostgreSQL superuser can bypass the audit guards with `session_replication_role`.
+
+Tests (need a local PostgreSQL; they build and drop their own `stayspot_test` database):
+```bash
+cd api && npm test        # screens 3.1-3.3: 45 tests (validation, transaction failure paths, audit ordering, concurrency, scale); screens 3.4-3.6: 13 more (analytics on a real DB, Mongo routes on a fake Mongo)
+cd web && npm install && npm test   # 29 Vitest tests: the real React screens + router in jsdom with mocked fetch (fake Chart.js / Leaflet)
+```
+Walkthrough of every screen, including how to trigger the insufficient-balance and blocked-check-in errors with any seeded guest: `docs/screens_3_1_to_3_3.md`. Analytics, Map and Reviews (screens 3.4-3.6): `docs/screens_3_4_to_3_6.md`.
+
+The Map and Reviews screens need MongoDB seeded (`python data_generation/mongo_seeder.py`, then `npm run mongo:setup` from the repo root) and the **repo-root** `npm install` (the map route reuses `mongo/02_workflow3_geonear.js`). Chart.js and Leaflet are npm dependencies bundled into the build; the map still needs internet for OpenStreetMap tiles.
+
+## Tech choices
+- **Front end: React 18 + Vite + React Router (HashRouter).** The same six screens, API calls and design system as the original plain-JS version, now as function components and hooks. State that belongs in the URL (filters, sort, page, selected property) still lives in the URL; the acting guest lives in a context. `npm run build` writes `web/dist`, which the API serves as static files. Shared look: `docs/design/design_system.md`.
+- **Charts and map: Chart.js 4 (bars + moving-average line) and Leaflet 1.9 + OpenStreetMap tiles**, imported from npm and driven from `useEffect` (created on mount, destroyed on unmount). Reviews use plain CSS bars. MongoDB is accessed only through the `$geoNear` / `$facet` pipelines.
+- **API: Node + Express + `pg` (+ `mongodb` for map/reviews).** A thin layer: every business rule (price, balance check, locking, audit row, status machine) stays in PostgreSQL procedures/triggers; the API validates input, runs the transaction, and translates database errors into friendly HTTP errors (`docs/api_endpoints.md`).
+
+## Changes to inherited scripts (Assignment 2)
+In addition to the fixes in `docs/handover_note.md`:
+1. `sql/01_schema_ddl.sql`: `wallet_audit_logs.timestamp` default changed from `current_timestamp` to `clock_timestamp()` (no new columns); `action_type` CHECK (`DEBIT`/`CREDIT`). Reason: `current_timestamp` is frozen at transaction start, so audit rows written in one transaction all shared a timestamp and a running balance could not be ordered.
+2. `sql/02_indexes.sql`: indexes on `bookings(guest_id, ...)`, `bookings(status, ...)`, `wallet_audit_logs(guest_id, timestamp, id)`, `pg_trgm` GIN indexes for name/title search. Reason: the screens query by these columns.
+3. `sql/03_triggers_and_audit.sql`: removed the unreachable `NO_CHANGE` branch (zero-change updates write no row).
+4. `sql/04_stored_procedures.sql`: nights bounded to 1-365, cost overflow check, `hint` codes on every error so the API can map them (`NOT_FOUND`, `INVALID_NIGHTS`, `INVALID_TRANSITION`, `AMOUNT_TOO_LARGE`).
+5. `data_generation/postgres_seeder.py`: spreads audit timestamps over ~88 days (as table owner, immutability trigger disabled inside one transaction); verifies the audit balance chain.
+6. `.env.example`: `API_PORT`, `CORS_ORIGIN`. Added `.gitignore`.
+
+## Assumptions (UI)
+Screens 3.4-3.6 have their own numbered assumptions in `docs/screens_3_4_to_3_6.md`.
+
+- Currency is shown as INR (₹). Money is handled as decimal strings end to end.
+- "Acting as" is a demo switcher; there is no login.
+- A booking's price is always `properties.base_price * nights` from the database; `nights` is limited to 1-365.
+- Seeded bookings do not debit wallets, so only bookings made through the UI create booking-linked audit rows.
+- Audit trail order is by `timestamp` (then `id` as a tie-break; the column records each row's real insert time); the date filter treats plain dates as whole UTC days and the UI sends local-midnight instants.
+
+## Screenshots / contribution table / demo video
+_To be added by the team before submission (see `docs/verification_report.md` checklist)._
+
 ## A log from an actual run
 
 ```json

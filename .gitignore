@@ -1,1 +1,11 @@
+*.dump
+*.pyc
+*.sql.gz
 .DS_Store
+.env
+.venv/
+__pycache__/
+build/
+dist/
+node_modules/
+venv/

@@ -1,0 +1,17 @@
+/* Screens 3.4-3.6 (Analytics, Map, Reviews). Uses the design-system tokens from styles.css. */
+.picker { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s3); }
+.stat { display: flex; flex-direction: column; } .stat strong { font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.chart-box { position: relative; height: 320px; }
+.map-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--s4); } .map-grid .card { margin-bottom: 0; }
+.map { height: 480px; border-radius: 8px; z-index: 0; } .map-grid .scroll { max-height: 480px; overflow: auto; }
+.live::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: var(--ok); }
+.delta { color: var(--ok); font-weight: 600; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s4); margin-bottom: var(--s4); } .grid2 .card { margin-bottom: 0; }
+.big { font-size: 2.5rem; font-weight: 700; line-height: 1.2; }
+.bar-row { display: grid; grid-template-columns: 90px 1fr 40px; gap: var(--s2); align-items: center; margin: 6px 0; }
+.bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar { height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; } .bar i { display: block; height: 100%; }
+tr.clickable { cursor: pointer; } tr.clickable:hover, tr.sel { background: var(--brand-soft); }
+.scroll { overflow-x: auto; }
+@media (max-width: 700px) { .map-grid { grid-template-columns: 1fr; } .map { height: 340px; } .chart-box { height: 260px; } }

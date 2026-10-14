@@ -5,7 +5,12 @@
     "mongo:setup": "node mongo/01_collections_and_indexes.js",
     "mongo:workflow3": "node mongo/02_workflow3_geonear.js",
     "mongo:workflow4": "node mongo/03_workflow4_facet.js",
-    "mongo:stats": "node performance/mongo_execution_stats.js"
+    "mongo:stats": "node performance/mongo_execution_stats.js",
+    "start": "npm --prefix api start",
+    "test:api": "npm --prefix api test",
+    "test:web": "npm --prefix web test",
+    "web:dev": "npm --prefix web run dev",
+    "web:build": "npm --prefix web run build"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
