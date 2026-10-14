@@ -1,0 +1,11 @@
+node_modules/
+.env
+__pycache__/
+*.pyc
+venv/
+.venv/
+dist/
+build/
+*.dump
+*.sql.gz
+.DS_Store
