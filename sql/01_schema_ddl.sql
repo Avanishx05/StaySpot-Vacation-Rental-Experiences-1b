@@ -31,7 +31,9 @@ create table wallet_audit_logs(
 	guest_id uuid not null references guests(id) on delete no action,
 	booking_id uuid references bookings(id) on delete no action,
 	amount_changed decimal(10,2) not null,
-	action_type varchar(50) not null,
+	action_type varchar(50) not null check (action_type in ('DEBIT','CREDIT')),
 	balance_after decimal(10,2) not null check(balance_after >=0.00),
-	timestamp timestamp with time zone default current_timestamp
+	-- clock_timestamp() = the real time of THIS insert. (current_timestamp is frozen at transaction
+	-- start, so rows written in one transaction would all tie and a running balance could not be ordered.)
+	timestamp timestamp with time zone not null default clock_timestamp()
 );
