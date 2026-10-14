@@ -7,10 +7,10 @@ declare
 	action varchar(50);
 begin
 	amount_diff :=new.wallet_balance -old.wallet_balance;
-	if amount_diff < 0 then action := 'DEBIT';
-	elseif amount_diff > 0 then action := 'CREDIT';
-	else action := 'NO_CHANGE';
+	if amount_diff = 0 then
+		return new;
 	end if;
+	action := case when amount_diff < 0 then 'DEBIT' else 'CREDIT' end;
 
 	insert into wallet_audit_logs(guest_id, booking_id, amount_changed, action_type, balance_after)
 	values(new.id, nullif(current_setting('stayspot.booking_id', true), '')::uuid, amount_diff, action, new.wallet_balance);
