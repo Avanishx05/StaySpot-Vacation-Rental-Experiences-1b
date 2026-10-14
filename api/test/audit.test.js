@@ -141,35 +141,15 @@ test("audit rows are immutable at the database level", async () => {
   );
 });
 
-test("a booking produces a DEBIT audit row linked to that booking; top-up produces a CREDIT row", async () => {
+test("a booking produces a DEBIT audit row linked to that booking", async () => {
   const g = uid(7);
   await addGuest(db, g, "Booker", "3000.00");
   const b = (await request(app).post("/api/bookings").send({ guestId: g, propertyId: uid(1001), nights: 2 }).expect(201)).body;
-  const t = (await request(app).post(`/api/guests/${g}/topup`).send({ amount: "250.50" }).expect(200)).body;
-  assert.equal(t.balanceBefore, "1000.00");
-  assert.equal(t.balanceAfter, "1250.50");
-  assert.equal(t.auditEntry.action_type, "CREDIT");
   const r = (await audit(g)).body;
-  assert.equal(r.total, 2);
-  assert.equal(r.items[0].action_type, "CREDIT");
-  assert.equal(r.items[1].booking_id, b.booking.id);
+  assert.equal(r.total, 1);
+  assert.equal(r.items[0].action_type, "DEBIT");
+  assert.equal(r.items[0].amount_changed, "-2000.00");
+  assert.equal(r.items[0].booking_id, b.booking.id);
   assert.equal(r.items[0].balance_after, r.guest.wallet_balance);
-});
-
-test("top-up validation", async () => {
-  const g = uid(7);
-  for (const amount of [0, "0", -5, "abc", "1.234", "", null, undefined, 1000001, "1e3", "99999999.99"]) {
-    const r = await request(app).post(`/api/guests/${g}/topup`).send({ amount });
-    assert.equal(r.status, 400, `amount=${amount}`);
-  }
-  await request(app).post(`/api/guests/${uid(31337)}/topup`).send({ amount: 10 }).expect(404);
-  await request(app).post(`/api/guests/bad/topup`).send({ amount: 10 }).expect(400);
-});
-
-test("top-up that would exceed the wallet column size is a friendly 422", async () => {
-  const g = uid(8);
-  await addGuest(db, g, "Nearly Full", "99500000.00");
-  const r = await request(app).post(`/api/guests/${g}/topup`).send({ amount: "1000000" }).expect(422);
-  assert.equal(r.body.error.code, "AMOUNT_TOO_LARGE");
-  assert.equal((await db.query("select wallet_balance from guests where id=$1", [g])).rows[0].wallet_balance, "99500000.00");
+  assert.equal(r.guest.wallet_balance, "1000.00");
 });

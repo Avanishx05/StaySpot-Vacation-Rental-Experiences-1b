@@ -142,22 +142,4 @@ export function render({ view, query, signal }) {
   }
   view.append(card("Your bookings", [h("p", { class: "muted" }, "A guest can have only one stay checked in at a time: check in one booking, then try to check in another to see the database refuse it."), statusMsg, listBox]));
   loadBookings();
-
-  // ---- demo tool: top up ----
-  const amount = h("input", { id: "topup", type: "number", min: "1", step: "0.01", placeholder: "Amount in ₹", inputmode: "decimal" });
-  const topMsg = h("div", { "aria-live": "polite" });
-  const topBtn = button("Add money", { variant: "secondary", type: "submit" });
-  const topForm = h("form", { class: "toolbar", novalidate: true }, amount, topBtn);
-  topForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (topBtn.disabled) return;
-    setBusy(topBtn, true, "Adding…");
-    try {
-      const out = await api(`/guests/${actor.id}/topup`, { method: "POST", body: { amount: amount.value.trim() } });
-      replace(topMsg, banner("success", "Money added", `Balance ${money(out.balanceBefore)} → ${money(out.balanceAfter)}. The database logged a CREDIT audit entry.`));
-      amount.value = ""; await refreshActor(); paintBalance();
-    } catch (err) { const f = friendlyError(err); replace(topMsg, banner("error", f.title, err.code === "VALIDATION_ERROR" ? "Enter a positive amount (max ₹10,00,000, up to 2 decimals)." : f.text)); }
-    finally { setBusy(topBtn, false); }
-  });
-  view.append(card("Demo tools · top up wallet", [topForm, topMsg]));
 }

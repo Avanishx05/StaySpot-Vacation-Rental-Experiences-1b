@@ -1,9 +1,8 @@
 const router = require("express").Router();
-const { query, withTransaction } = require("../db");
+const { query } = require("../db");
 const { notFound, badRequest } = require("../errors");
-const config = require("../config");
 const {
-  pagination, searchTerm, likePattern, sortParam, uuidParam, isUuid, moneyString, parseDateBound,
+  pagination, searchTerm, likePattern, sortParam, uuidParam, isUuid, parseDateBound,
 } = require("../validate");
 
 const SORTS = {
@@ -127,37 +126,6 @@ router.get("/:id/audit", async (req, res, next) => {
         closingBalance: last.rowCount ? last.rows[0].closing : null,
       },
     });
-  } catch (err) {
-    next(err);
-  }
-});
-
-// POST /api/guests/:id/topup { amount }  -> { balanceBefore, balanceAfter, auditEntry }
-// Demo utility: adds money to the wallet so the trigger's CREDIT path can be shown and a
-// guest who ran out of money can book again. The audit row is written by the DB trigger.
-router.post("/:id/topup", async (req, res, next) => {
-  try {
-    const id = uuidParam(req.params.id);
-    const amount = moneyString((req.body || {}).amount, "amount", { max: config.limits.maxTopUp });
-    const out = await withTransaction(async (c) => {
-      const before = await c.query("select wallet_balance from guests where id = $1 for update", [id]);
-      if (!before.rowCount) throw notFound("Guest");
-      const after = await c.query(
-        "update guests set wallet_balance = wallet_balance + $2::numeric where id = $1 returning wallet_balance",
-        [id, amount]
-      );
-      const audit = await c.query(
-        `select id, timestamp, action_type, amount_changed, balance_after, booking_id
-           from wallet_audit_logs where guest_id = $1 order by timestamp desc, id desc limit 1`,
-        [id]
-      );
-      return {
-        balanceBefore: before.rows[0].wallet_balance,
-        balanceAfter: after.rows[0].wallet_balance,
-        auditEntry: audit.rows[0] || null,
-      };
-    });
-    res.json(out);
   } catch (err) {
     next(err);
   }

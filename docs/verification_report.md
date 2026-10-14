@@ -8,7 +8,7 @@ Method: built a clean PostgreSQL 16 database from `sql/01-06`, ran `postgres_see
 |---|---|
 | Part A schema, seeds, procedures run locally | **Pass** (PG side): all six SQL files and the seeder run clean after the previous member's fixes. Duplicate CHECKED_IN guests: 0. |
 | `docs/handover_note.md`: worked / didn't / changed / suggestions | **Present, specific and honest** - the 19 listed errors and 8 change groups were checked against the code and are accurate. **Too long**: ~1,460 words vs "about one page". Trim before submission. |
-| API sketch before building | **Present** (`docs/api_endpoints.md`) but incomplete for the UI (no search/sort params, no demo top-up, actors unbounded, no error-code table). Updated. |
+| API sketch before building | **Present** (`docs/api_endpoints.md`) but incomplete for the UI (no search/sort params, actors unbounded, no error-code table). Updated. |
 | "Note every change you make in your README" | **Missing**: changes are only in the handover note. README now has a "Changes to inherited scripts" section. |
 | Keep Assignment 1 commit history | The zip has no `.git`. Continue in the fork/clone, not a re-upload. |
 

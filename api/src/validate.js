@@ -61,18 +61,6 @@ function sortParam(query, allowed, defaultKey) {
   return { key, column: allowed[key].column, dir: dir || allowed[key].dir };
 }
 
-/** money string like "1234.5" -> "1234.50"; rejects negatives, >2 decimals, non-numeric, 0. */
-function moneyString(value, field, { max }) {
-  const raw = typeof value === "number" ? String(value) : value;
-  if (typeof raw !== "string" || !/^\d{1,8}(\.\d{1,2})?$/.test(raw.trim())) {
-    throw badRequest(`"${field}" must be a positive amount with at most 2 decimals.`, { [field]: "Invalid amount." });
-  }
-  const n = Number(raw);
-  if (!(n > 0)) throw badRequest(`"${field}" must be greater than zero.`, { [field]: "Must be > 0." });
-  if (n > max) throw badRequest(`"${field}" cannot exceed ${max}.`, { [field]: `Max ${max}.` });
-  return n.toFixed(2);
-}
-
 /** Accepts YYYY-MM-DD (whole UTC day) or a full ISO timestamp. */
 function parseDateBound(value, field, isEnd) {
   if (value === undefined || value === "") return undefined;
@@ -92,5 +80,5 @@ function parseDateBound(value, field, isEnd) {
 
 module.exports = {
   isUuid, uuidParam, optionalUuid, parseIntStrict, pagination, searchTerm, likePattern,
-  sortParam, moneyString, parseDateBound,
+  sortParam, parseDateBound,
 };

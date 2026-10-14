@@ -4,9 +4,9 @@
 ```
 api/src/{config,db,errors,validate,app,server}.js     shared server plumbing (teammates reuse it)
 api/src/routes/{actors,guests,properties,bookings}.js  endpoints for 3.1-3.3
-api/test/*.test.js                                     47 API/DB tests (real PostgreSQL, throw-away DB)
+api/test/*.test.js                                     45 API/DB tests (real PostgreSQL, throw-away DB)
 web/index.html, css/styles.css, js/{dom,api,format,state,router,app}.js, js/pages/{browse,transaction,audit}.js
-web/test/*.test.js                                     12 UI tests (real pages in jsdom -> real API -> real DB)
+web/test/*.test.js                                     11 UI tests (real pages in jsdom -> real API -> real DB)
 ```
 Plain HTML / CSS / ES modules, **no framework and no build step** (the API serves `web/`). Chosen because the screens are forms and tables, the whole thing is readable in a viva, and `npm install` is only needed for the API.
 
@@ -15,7 +15,7 @@ Plain HTML / CSS / ES modules, **no framework and no build step** (the API serve
 2. In the header **"Acting as"**, search a name and pick a guest -> **Book a stay**: pick a property, 3 nights; show the estimate, confirm; point at *wallet before -> after* and the *DEBIT audit entry* (written by the trigger, linked to the booking).
 3. **Insufficient balance:** same guest, pick any property, enter **365 nights** (always costs more than a seeded wallet holds: at least ₹3,65,000 vs about ₹1,70,000 max) -> friendly "short by ₹X, nothing was charged"; the balance is unchanged.
 4. **Partial unique index:** under "Your bookings", click **Check in** on one booking -> OK. Book a second stay and click **Check in** on it -> "You already have a stay in progress". (About 64% of seeded guests already have a checked-in booking, so for them the very first check-in is refused; to show the success path pick a guest with no *Checked in* badge, or **Complete stay** the active one first.) Complete the first, check in the second -> works.
-5. **Audit trail** -> running balance, totals, date presets; use "Add money" on the booking screen to show a CREDIT row.
+5. **Audit trail** -> running balance, totals, date presets. The booking you just made is the newest DEBIT row, linked to its booking; the older rows without a booking are the seeder's random wallet changes (credits and debits).
 
 ## Edge cases handled (and where it is tested)
 | Area | Cases |

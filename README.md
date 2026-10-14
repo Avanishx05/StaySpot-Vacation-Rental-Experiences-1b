@@ -65,8 +65,8 @@ Connect the API as a **non-superuser** in real use: a PostgreSQL superuser can b
 
 Tests (need a local PostgreSQL; they build and drop their own `stayspot_test` database):
 ```bash
-cd api && npm test        # 47 tests: validation, transaction failure paths, audit ordering, concurrency, scale
-cd web && npm install && npm test   # 12 tests: the real pages in jsdom against the real API
+cd api && npm test        # 45 tests: validation, transaction failure paths, audit ordering, concurrency, scale
+cd web && npm install && npm test   # 11 tests: the real pages in jsdom against the real API
 ```
 Walkthrough of every screen, including how to trigger the insufficient-balance and blocked-check-in errors with any seeded guest: `docs/screens_3_1_to_3_3.md`.
 

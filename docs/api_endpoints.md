@@ -47,12 +47,6 @@ Conventions
 
 `PATCH /bookings/:id/status` allows only `CONFIRMED -> CHECKED_IN -> COMPLETED`.
 
-| Endpoint | Input | Output | DB |
-|---|---|---|---|
-| `POST /guests/:id/topup` | `{ amount }` (> 0, <= 1,000,000, max 2 decimals) | `{ balanceBefore, balanceAfter, auditEntry }` | PG `guests` update -> trigger -> `wallet_audit_logs` (CREDIT) |
-
-`topup` is a demo utility so a guest who ran out of money can book again and so the trigger's CREDIT path can be shown.
-
 ## Audit trail
 
 | Endpoint | Input | Output | DB |

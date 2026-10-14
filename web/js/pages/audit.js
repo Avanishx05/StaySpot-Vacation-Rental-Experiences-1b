@@ -52,7 +52,7 @@ export function render({ view, query }) {
     if (!items.length && total > 0) {
       main = empty("That page doesn't exist", `There are only ${lastPage} pages.`, button("Go to the last page", { variant: "secondary", onClick: () => { st.page = lastPage; sync(); load(); } }));
     } else if (!items.length) {
-      main = empty(st.from || st.to ? "No wallet activity in this period" : "No wallet activity yet", st.from || st.to ? "Try a wider date range." : "Every deduction or top-up will be listed here, written automatically by the database.");
+      main = empty(st.from || st.to ? "No wallet activity in this period" : "No wallet activity yet", st.from || st.to ? "Try a wider date range." : "Every wallet change will be listed here, written automatically by the database.");
     } else {
       main = h("div", null,
         dl([["Entries", total.toLocaleString()], ["Opening balance", money(summary.openingBalance)], ["Total credits", h("span", { class: "pos" }, money(summary.totalCredits))], ["Total debits", h("span", { class: "neg" }, money(summary.totalDebits))], ["Closing balance", h("strong", null, money(summary.closingBalance))]]),

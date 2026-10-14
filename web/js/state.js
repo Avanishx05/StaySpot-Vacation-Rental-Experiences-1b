@@ -21,7 +21,7 @@ export function setActor(a) {
   emit();
 }
 
-/** Re-read the balance from the server (after a booking / top-up). */
+/** Re-read the balance from the server (after a booking). */
 export async function refreshActor() {
   if (!actor) return;
   try {

@@ -2,7 +2,7 @@ const router = require("express").Router();
 
 // --- Screens 3.1 - 3.3 (Browse, Transaction, Audit trail) ---
 router.use("/actors", require("./actors"));
-router.use("/guests", require("./guests")); // includes /guests/:id/audit and /guests/:id/topup
+router.use("/guests", require("./guests")); // includes /guests/:id/audit
 router.use("/properties", require("./properties"));
 router.use("/bookings", require("./bookings"));
 

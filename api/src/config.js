@@ -23,7 +23,6 @@ module.exports = {
     defaultPageSize: 25,
     maxPageSize: 100,
     maxNights: 365,
-    maxTopUp: 1000000,
     maxSearchLength: 100,
   },
 };

@@ -40,7 +40,6 @@ Detail: [<- Back]  Guest name   [Act as this guest] [Audit trail]
 |  ERR: "Not enough money in your wallet - costs X, you hold Y, short by Z. Nothing was charged." |
 | Your bookings  [Booking | Property | Nights | Total | Status | Next step: Check in / Complete stay] |
 |   ERR on 2nd check-in: "You already have a stay in progress ..."   |
-| Demo tools: top up wallet [ amount ] [Add money]                   |
 ```
 
 ## 3.3 Audit trail

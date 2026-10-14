@@ -99,17 +99,6 @@ test("no acting guest: Book and Audit screens ask to pick one", async () => {
   assert.match(t.text(), /Choose who you are first/);
 });
 
-test("top-up shows a CREDIT message; invalid amounts are rejected politely", async () => {
-  await t.mount("transaction", `#/book`, actor(LOW, "Poor Tester", "500.00"));
-  type($("#topup"), "-5");
-  submit($("#topup").closest("form"));
-  await t.waitFor(() => t.text().includes("Enter a positive amount"));
-  type($("#topup"), "250.50");
-  submit($("#topup").closest("form"));
-  await t.waitFor(() => t.text().includes("Money added"));
-  assert.match(t.text(), /₹500\.00 → ₹750\.50/);
-});
-
 test("API down: booking shows a 'can't reach' message and says nothing was changed", async () => {
   await t.mount("transaction", `#/book?property=${P1}`, actor(RICH, "Rich Tester", "40000.00"));
   await t.waitFor(() => $(".chosen") && $(".chosen").textContent.includes("Beach House"), "property prefilled");
