@@ -195,6 +195,29 @@ def gen_wallet_updates(conn,guest_ids):
 
     print(f"Expected Audit Entries: {successful_updates}")
 
+def spread_audit_timestamps(conn):
+    """The audit trigger stamps rows with clock_timestamp(), so every seeded row would be 'today'.
+    To make the date filter meaningful we spread each guest's rows over the last ~88 days,
+    keeping each guest's existing time order (so running balances stay correct).
+    Done once, by the table owner, with the immutability trigger disabled *inside one
+    transaction* - the trigger itself has no backdoor."""
+    with conn.cursor() as cur:
+        cur.execute("alter table wallet_audit_logs disable trigger audit_log_immutable")
+        cur.execute("""
+            update wallet_audit_logs w
+               set timestamp = now() - interval '88 days'
+                               + (r.rn::float8 / r.cnt) * interval '87 days'
+                               + (abs(hashtext(w.guest_id::text)) % 1440) * interval '1 minute'
+              from (select id,
+                           row_number() over (partition by guest_id order by timestamp, id) as rn,
+                           count(*)     over (partition by guest_id)              as cnt
+                      from wallet_audit_logs) r
+             where r.id = w.id
+        """)
+        cur.execute("alter table wallet_audit_logs enable trigger audit_log_immutable")
+    conn.commit()
+    print("Audit timestamps spread over the last ~88 days")
+
 def verify_data(conn):
 
     with conn.cursor() as cur:
@@ -216,6 +239,15 @@ def verify_data(conn):
         cur.execute("select guest_id, count(*) from bookings where status = 'CHECKED_IN' group by guest_id having count(*) > 1;")
         duplicate_checked_in = cur.fetchall()
 
+        cur.execute("""
+            select count(*) from (
+              select balance_after - amount_changed as expected_prev,
+                     lag(balance_after) over (partition by guest_id order by timestamp, id) as prev
+                from wallet_audit_logs) t
+             where prev is not null and prev <> expected_prev""")
+        broken_chains = cur.fetchone()[0]
+
+    print(f"Audit chains broken (should be 0): {broken_chains}")
     print(f"Guests: {guests_count:,}")
     print(f"Properties: {properties_count:,}")
     print(f"Bookings: {bookings_count:,}")
@@ -234,6 +266,7 @@ def main():
         property_ids, property_prices = gen_props(conn)
         gen_bookings(conn,guest_ids,property_ids,property_prices)
         gen_wallet_updates(conn,guest_ids)
+        spread_audit_timestamps(conn)
 
         with conn.cursor() as cur:
             cur.execute("select refresh_property_summary();")
