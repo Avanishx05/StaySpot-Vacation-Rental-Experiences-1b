@@ -1,5 +1,75 @@
 # StaySpot
 
+## Quick start (Ubuntu/Linux)
+
+### Prerequisites
+- Node.js 20 or newer and npm
+- PostgreSQL 14 or newer, with permission to create databases
+- Python 3.10 or newer and `pip`
+- MongoDB running locally (needed for Map and Reviews; Browse, Booking, Audit and Analytics use PostgreSQL)
+
+### 1. Configure the environment
+From the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` to match your local PostgreSQL credentials and MongoDB URI. The defaults are `PG_DB=stayspot`, `PG_USER=postgres`, `PG_PASSWORD=postgres`, and `MONGODB_URI=mongodb://localhost:27017`; change them if your local services use different credentials. Ensure the PostgreSQL role can create databases for the test suite.
+
+### 2. Create and seed PostgreSQL
+Run from the repository root:
+
+```bash
+createdb stayspot
+for f in sql/0*.sql; do psql -d stayspot -v ON_ERROR_STOP=1 -f "$f" || exit 1; done
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r data_generation/requirements.txt
+python data_generation/postgres_seeder.py
+```
+
+The SQL scripts are applied in numeric order. If `createdb` reports that the database already exists, either use that database after confirming it is disposable, or reset it with `dropdb stayspot && createdb stayspot` before applying the scripts.
+
+### 3. Seed MongoDB (Map and Reviews)
+Make sure MongoDB is running, then execute:
+
+```bash
+python data_generation/mongo_seeder.py
+npm install
+npm run mongo:setup
+npm run mongo:workflow3
+npm run mongo:workflow4
+```
+
+### 4. Build and start the app
+In the repository root:
+
+```bash
+cd web
+npm install
+npm run build
+cd ../api
+npm install
+npm start
+```
+
+Open **http://localhost:4000**. For frontend development, keep the API running and use a second terminal:
+
+```bash
+cd web
+npm run dev
+```
+
+Vite runs at `http://localhost:5173` and proxies `/api` requests to the API on port 4000.
+
+### Common setup checks
+- `psql -d stayspot -c '\dt'` should list the PostgreSQL tables.
+- `mongosh "$MONGODB_URI"` should connect to MongoDB.
+- Check `.env` values if the API cannot connect to either database.
+- Map tiles require internet access to OpenStreetMap.
+- Do not run tests against production or valuable databases: API tests drop and recreate the configured test database (`stayspot_test` by default).
+
 ## Repository Information
 
 **GitHub Repository:** [-StaySpot-Vacation-Rental-Experiences](https://github.com/SaiSrinivas49/-StaySpot-Vacation-Rental-Experiences)
@@ -64,11 +134,24 @@ cd ../api && npm install && npm start        # API + built front end on http://l
 Open http://localhost:4000. For front-end development run the API (`cd api && npm start`) and, in another terminal, `cd web && npm run dev`: Vite serves http://localhost:5173 with hot reload and proxies `/api` to port 4000. To start over: `dropdb stayspot && createdb stayspot` and repeat (the audit table is append-only, so it cannot be truncated).
 Connect the API as a **non-superuser** in real use: a PostgreSQL superuser can bypass the audit guards with `session_replication_role`.
 
-Tests (need a local PostgreSQL; they build and drop their own `stayspot_test` database):
+## Step 4: Tests and verification
+
+Run the API tests and frontend tests separately. From the repository root:
+
 ```bash
-cd api && npm test        # screens 3.1-3.3: 45 tests (validation, transaction failure paths, audit ordering, concurrency, scale); screens 3.4-3.6: 13 more (analytics on a real DB, Mongo routes on a fake Mongo)
-cd web && npm install && npm test   # 29 Vitest tests: the real React screens + router in jsdom with mocked fetch (fake Chart.js / Leaflet)
+cd api
+npm install
+npm test
+cd ../web
+npm install
+npm test
 ```
+
+The API suite uses Node's test runner and Supertest against a disposable PostgreSQL database named `stayspot_test` (override with `TEST_PG_DB`). It drops and recreates that database, applies the repository SQL schema, and tests the actual PostgreSQL procedures, triggers, and indexes. Use a local PostgreSQL account that can create/drop databases. Mongo route tests use a fake Mongo implementation so the API tests do not require a live MongoDB service.
+
+The frontend suite uses Vitest, React Testing Library, jsdom, and mocked HTTP responses. It tests the real React screens without requiring running database services.
+
+See [`docs/step4_test_plan.md`](docs/step4_test_plan.md) for the important scenarios and expected outcomes. Test results should be recorded from the machine used for final verification; do not treat the test inventory as proof that a test run passed.
 Walkthrough of every screen, including how to trigger the insufficient-balance and blocked-check-in errors with any seeded guest: `docs/screens_3_1_to_3_3.md`. Analytics, Map and Reviews (screens 3.4-3.6): `docs/screens_3_4_to_3_6.md`.
 
 The Map and Reviews screens need MongoDB seeded (`python data_generation/mongo_seeder.py`, then `npm run mongo:setup` from the repo root) and the **repo-root** `npm install` (the map route reuses `mongo/02_workflow3_geonear.js`). Chart.js and Leaflet are npm dependencies bundled into the build; the map still needs internet for OpenStreetMap tiles.
@@ -96,8 +179,11 @@ Screens 3.4-3.6 have their own numbered assumptions in `docs/screens_3_4_to_3_6.
 - Seeded bookings do not debit wallets, so only bookings made through the UI create booking-linked audit rows.
 - Audit trail order is by `timestamp` (then `id` as a tie-break; the column records each row's real insert time); the date filter treats plain dates as whole UTC days and the UI sends local-midnight instants.
 
-## Screenshots / contribution table / demo video
-_To be added by the team before submission (see `docs/verification_report.md` checklist)._
+## Screenshots, contribution table, and demo video
+
+- Screenshots: add final screenshots here or under `docs/` before submission.
+- Contribution table: add each team member's actual contribution before submission.
+- Demo video (maximum 5 minutes): **TODO — upload the recorded seeded-data walkthrough and replace this line with its shareable URL.** Do not submit with this placeholder still present.
 
 ## A log from an actual run
 
