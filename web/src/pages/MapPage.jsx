@@ -85,6 +85,10 @@ export default function MapPage() {
     const apply = (data) => {
       const d = new Map();
       const seen = new Set();
+      // Size dots relative to the busiest hotspot, capped by the map's size so neighbouring 1 km buckets don't merge.
+      const max = Math.max(1, ...data.map((r) => r.searchCount));
+      const el = mapEl.current;
+      const cap = Math.min(16, Math.max(8, Math.min(el?.clientWidth || 0, el?.clientHeight || 0) / 40));
       for (const r of data) {
         const k = keyOf(r); seen.add(k);
         if (prev.current.size) d.set(k, r.searchCount - (prev.current.get(k) || 0));
@@ -93,7 +97,7 @@ export default function MapPage() {
           m = L.circleMarker([r.lat, r.lng], { weight: 1, fillOpacity: 0.55 }).addTo(map.current).on("click", () => pickRef.current(k));
           markers.current.set(k, m);
         }
-        m.setRadius(6 + 3 * Math.sqrt(r.searchCount)).setStyle(style(k)).bindTooltip(`${r.searchCount} searches, ${r.distanceKm} km`);
+        m.setRadius(Math.max(4, cap * Math.sqrt(r.searchCount / max))).setStyle(style(k)).bindTooltip(`${r.searchCount} searches, ${r.distanceKm} km`);
       }
       for (const [k, m] of markers.current) if (!seen.has(k)) { m.remove(); markers.current.delete(k); }
       prev.current = new Map(data.map((r) => [keyOf(r), r.searchCount]));

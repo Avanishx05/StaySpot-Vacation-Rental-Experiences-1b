@@ -7,10 +7,7 @@
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --s1: .25rem; --s2: .5rem; --s3: .75rem; --s4: 1rem; --s5: 1.5rem; --s6: 2rem;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #0f141b; --surface: #171e28; --text: #e8edf4; --muted: #9aa6b6; --border: #2b3544; --brand: #4fc3c3; --brand-strong: #7bd7d7; --brand-soft: #12302f;
-    --ok: #5ed38b; --ok-soft: #12301f; --warn: #f2c14e; --warn-soft: #36290a; --bad: #ff8a80; --bad-soft: #3a1714; --info-soft: #172338; }
-}
+
 * { box-sizing: border-box; }
 body { margin: 0; font: 15px/1.5 var(--font); background: var(--bg); color: var(--text); }
 h1 { font-size: 1.6rem; margin: 0 0 var(--s4); } h2 { font-size: 1.1rem; margin: 0; }

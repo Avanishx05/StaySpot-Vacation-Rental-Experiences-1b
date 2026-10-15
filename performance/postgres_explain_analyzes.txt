@@ -1,57 +1,58 @@
-Query:
+PostgreSQL 16.15, seeded with data_generation/postgres_seeder.py (10,000 guests, 1,000 properties, 50,000 bookings over 91 days, 100,000 audit rows). Run on 15 Oct 2026 after ANALYZE.
+
+== Partial unique index idx_active_stay
 
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT * FROM bookings WHERE guest_id = (SELECT guest_id FROM bookings WHERE status = 'CHECKED_IN' LIMIT 1)
 AND status = 'CHECKED_IN';
 
-"QUERY PLAN"
-"Index Scan using idx_active_stay on bookings  (cost=0.49..8.50 rows=1 width=72) (actual time=0.033..0.034 rows=1.00 loops=1)"
-"  Index Cond: (guest_id = (InitPlan 1).col1)"
-"  Index Searches: 1"
-"  Buffers: shared hit=5"
-"  InitPlan 1"
-"    ->  Limit  (cost=0.00..0.20 rows=1 width=16) (actual time=0.018..0.018 rows=1.00 loops=1)"
-"          Buffers: shared hit=2"
-"          ->  Seq Scan on bookings bookings_1  (cost=0.00..1275.00 rows=6257 width=16) (actual time=0.017..0.017 rows=1.00 loops=1)"
-"                Filter: ((status)::text = 'CHECKED_IN'::text)"
-"                Rows Removed by Filter: 1"
-"                Buffers: shared hit=2"
-"Planning Time: 0.173 ms"
-"Execution Time: 0.060 ms"
+Index Scan using idx_active_stay on bookings  (cost=0.48..8.50 rows=1 width=76) (actual time=0.043..0.044 rows=1 loops=1)
+  Index Cond: (guest_id = $0)
+  Buffers: shared hit=4
+  InitPlan 1 (returns $0)
+    ->  Limit  (cost=0.00..0.20 rows=1 width=16) (actual time=0.016..0.016 rows=1 loops=1)
+          Buffers: shared hit=1
+          ->  Seq Scan on bookings bookings_1  (cost=0.00..1292.00 rows=6392 width=16) (actual time=0.014..0.014 rows=1 loops=1)
+                Filter: ((status)::text = 'CHECKED_IN'::text)
+                Rows Removed by Filter: 3
+                Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=216
+Planning Time: 0.657 ms
+Execution Time: 0.072 ms
 
-"QUERY PLAN"
-"Incremental Sort  (cost=1972.35..2022.77 rows=1000 width=92) (actual time=35.337..35.406 rows=1000.00 loops=1)"
-"  Sort Key: ranked_properties.booking_date, ranked_properties.revenue_rank"
-"  Presorted Key: ranked_properties.booking_date"
-"  Full-sort Groups: 1  Sort Method: quicksort  Average Memory: 29kB  Peak Memory: 29kB"
-"  Pre-sorted Groups: 1  Sort Method: quicksort  Average Memory: 87kB  Peak Memory: 87kB"
-"  Buffers: shared hit=650"
-"  ->  Subquery Scan on ranked_properties  (cost=1972.18..1994.66 rows=1000 width=92) (actual time=33.617..34.956 rows=1000.00 loops=1)"
-"        Buffers: shared hit=650"
-"        ->  WindowAgg  (cost=1972.18..1992.16 rows=1000 width=92) (actual time=33.615..34.661 rows=1000.00 loops=1)"
-"              Window: w1 AS (PARTITION BY moving_average.booking_date ORDER BY moving_average.seven_day_moving_avg ROWS UNBOUNDED PRECEDING)"
-"              Storage: Memory  Maximum Storage: 17kB"
-"              Buffers: shared hit=650"
-"              ->  Sort  (cost=1972.16..1974.66 rows=1000 width=84) (actual time=33.608..33.692 rows=1000.00 loops=1)"
-"                    Sort Key: moving_average.booking_date, moving_average.seven_day_moving_avg DESC"
-"                    Sort Method: quicksort  Memory: 79kB"
-"                    Buffers: shared hit=650"
-"                    ->  Subquery Scan on moving_average  (cost=1902.35..1922.33 rows=1000 width=84) (actual time=31.808..32.783 rows=1000.00 loops=1)"
-"                          Buffers: shared hit=650"
-"                          ->  WindowAgg  (cost=1902.35..1922.33 rows=1000 width=84) (actual time=31.808..32.693 rows=1000.00 loops=1)"
-"                                Window: w1 AS (PARTITION BY bookings.property_id ORDER BY (date(bookings.created_at)) ROWS BETWEEN '6'::bigint PRECEDING AND CURRENT ROW)"
-"                                Storage: Memory  Maximum Storage: 17kB"
-"                                Buffers: shared hit=650"
-"                                ->  Sort  (cost=1902.33..1904.83 rows=1000 width=52) (actual time=31.794..31.837 rows=1000.00 loops=1)"
-"                                      Sort Key: bookings.property_id, (date(bookings.created_at))"
-"                                      Sort Method: quicksort  Memory: 71kB"
-"                                      Buffers: shared hit=650"
-"                                      ->  HashAggregate  (cost=1837.50..1852.50 rows=1000 width=52) (actual time=31.177..31.470 rows=1000.00 loops=1)"
-"                                            Group Key: bookings.property_id, date(bookings.created_at)"
-"                                            Batches: 1  Memory Usage: 625kB"
-"                                            Buffers: shared hit=650"
-"                                            ->  Seq Scan on bookings  (cost=0.00..1462.50 rows=50000 width=26) (actual time=0.026..17.333 rows=50000.00 loops=1)"
-"                                                  Filter: ((status)::text = ANY ('{CONFIRMED,CHECKED_IN,COMPLETED}'::text[]))"
-"                                                  Buffers: shared hit=650"
-"Planning Time: 0.319 ms"
-"Execution Time: 35.783 ms"
+== Workflow 2: sql/06_window_analytics.sql (7-calendar-day RANGE window + DENSE_RANK)
+
+EXPLAIN (ANALYZE, BUFFERS) <contents of sql/06_window_analytics.sql>
+
+Incremental Sort  (cost=13756.40..17486.27 rows=50000 width=92) (actual time=153.035..189.085 rows=38355 loops=1)
+  Sort Key: ranked_properties.booking_date, ranked_properties.revenue_rank
+  Presorted Key: ranked_properties.booking_date
+  Full-sort Groups: 91  Sort Method: quicksort  Average Memory: 29kB  Peak Memory: 29kB
+  Pre-sorted Groups: 91  Sort Method: quicksort  Average Memory: 49kB  Peak Memory: 49kB
+  Buffers: shared hit=676
+  ->  Subquery Scan on ranked_properties  (cost=13740.82..14865.82 rows=50000 width=92) (actual time=152.544..180.346 rows=38355 loops=1)
+        Buffers: shared hit=673
+        ->  WindowAgg  (cost=13740.82..14740.82 rows=50000 width=92) (actual time=152.539..172.164 rows=38355 loops=1)
+              Buffers: shared hit=673
+              ->  Sort  (cost=13740.82..13865.82 rows=50000 width=84) (actual time=152.525..155.154 rows=38355 loops=1)
+                    Sort Key: moving_average.booking_date, moving_average.seven_day_moving_avg DESC
+                    Sort Method: quicksort  Memory: 3508kB
+                    Buffers: shared hit=673
+                    ->  Subquery Scan on moving_average  (cost=5194.41..7444.41 rows=50000 width=84) (actual time=30.678..107.492 rows=38355 loops=1)
+                          Buffers: shared hit=670
+                          ->  WindowAgg  (cost=5194.41..7444.41 rows=50000 width=84) (actual time=30.676..103.572 rows=38355 loops=1)
+                                Buffers: shared hit=670
+                                ->  GroupAggregate  (cost=5194.41..6444.41 rows=50000 width=52) (actual time=30.643..59.976 rows=38355 loops=1)
+                                      Group Key: bookings.property_id, (date(bookings.created_at))
+                                      Buffers: shared hit=670
+                                      ->  Sort  (cost=5194.41..5319.41 rows=50000 width=26) (actual time=30.624..37.351 rows=50000 loops=1)
+                                            Sort Key: bookings.property_id, (date(bookings.created_at))
+                                            Sort Method: quicksort  Memory: 3964kB
+                                            Buffers: shared hit=670
+                                            ->  Seq Scan on bookings  (cost=0.00..1292.00 rows=50000 width=26) (actual time=0.016..9.149 rows=50000 loops=1)
+                                                  Buffers: shared hit=667
+Planning:
+  Buffers: shared hit=241
+Planning Time: 0.686 ms
+Execution Time: 191.563 ms
