@@ -10,7 +10,7 @@ A web front end and API for the StaySpot Part A databases. Guests browse propert
 **GitHub repository:** https://github.com/Avanishx05/StaySpot-Vacation-Rental-Experiences-1b
 (forked from the Assignment 1 repository https://github.com/SaiSrinivas49/-StaySpot-Vacation-Rental-Experiences, with its commit history kept)
 
-**Final commit hash:** `09966e7bfcd6e4cca35adaa41b4ee4eee4682906`
+**Final commit hash:** `0d41fca6053e385094113f320ec51af9906bf5e6`
 
 ## Contents
 
