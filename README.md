@@ -21,6 +21,7 @@ Edit `.env` to match your local PostgreSQL credentials and MongoDB URI. The defa
 Run from the repository root:
 
 ```bash
+dropdb --if-exists stayspot
 createdb stayspot
 for f in sql/0*.sql; do psql -d stayspot -v ON_ERROR_STOP=1 -f "$f" || exit 1; done
 python3 -m venv .venv
