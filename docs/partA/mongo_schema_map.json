@@ -1,0 +1,334 @@
+{
+  "project": "StaySpot – Vacation Rental & Experiences",
+  "database_type": "MongoDB (Unstructured / Document Store)",
+  "schema_version": "1.0.0",
+  "generated_at": "2026-09-04T00:00:00Z",
+
+  "collections": [
+    {
+      "collection": "PropertyAmenities",
+      "description": "Stores property amenities, house rules, and accessibility features.",
+      "indexes": [],
+      "sample_document": {
+        "_id": {
+          "type": "ObjectId",
+          "description": "MongoDB auto-generated document identifier"
+        },
+        "property_id": {
+          "type": "string",
+          "description": "Identifier of the related property",
+          "required": true,
+          "example": "PROP-001"
+        },
+        "amenities": {
+          "type": "array<string>",
+          "description": "List of amenities available at the property",
+          "example": [
+            "WiFi",
+            "Pool",
+            "Kitchen",
+            "Free Parking"
+          ]
+        },
+        "house_rules": {
+          "type": "array<string>",
+          "description": "Rules that guests should follow during their stay",
+          "example": [
+            "No smoking",
+            "No pets",
+            "Quiet hours 10pm-7am"
+          ]
+        },
+        "accessibility_features": {
+          "type": "array<string>",
+          "description": "Accessibility features available at the property",
+          "example": [
+            "Step-free entrance",
+            "Wide doorways"
+          ]
+        }
+      }
+    },
+
+    {
+      "collection": "PropertyReviews",
+      "description": "Stores guest reviews, ratings, location tags, comments, and review timestamps for properties.",
+      "indexes": [],
+      "aggregation_pipelines": {
+        "faceted_review_analytics": {
+          "description": "Uses MongoDB $facet to calculate rating distribution, most frequent location tags, and overall average rating in one aggregation.",
+          "pipeline": [
+            {
+              "$facet": {
+                "ratingDistribution": [
+                  {
+                    "$group": {
+                      "_id": "$rating",
+                      "count": {
+                        "$sum": 1
+                      }
+                    }
+                  },
+                  {
+                    "$sort": {
+                      "_id": 1
+                    }
+                  }
+                ],
+                "topTags": [
+                  {
+                    "$unwind": "$location_tags"
+                  },
+                  {
+                    "$group": {
+                      "_id": "$location_tags",
+                      "count": {
+                        "$sum": 1
+                      }
+                    }
+                  },
+                  {
+                    "$sort": {
+                      "count": -1
+                    }
+                  },
+                  {
+                    "$limit": 5
+                  }
+                ],
+                "overallAverage": [
+                  {
+                    "$group": {
+                      "_id": null,
+                      "avgRating": {
+                        "$avg": "$rating"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "sample_document": {
+        "_id": {
+          "type": "ObjectId",
+          "description": "MongoDB auto-generated document identifier"
+        },
+        "property_id": {
+          "type": "string",
+          "description": "Identifier of the reviewed property",
+          "required": true,
+          "example": "PROP-001"
+        },
+        "guest_id": {
+          "type": "string",
+          "description": "Identifier of the guest who submitted the review",
+          "required": true,
+          "example": "GUEST-001"
+        },
+        "rating": {
+          "type": "number",
+          "description": "Overall property rating",
+          "minimum": 1,
+          "maximum": 5,
+          "required": true,
+          "example": 4.5
+        },
+        "location_tags": {
+          "type": "array<string>",
+          "description": "Tags describing the property's location and surroundings",
+          "example": [
+            "quiet street",
+            "near metro",
+            "great view"
+          ]
+        },
+        "comment": {
+          "type": "string",
+          "description": "Guest's written review",
+          "example": "Loved the stay, host was very responsive."
+        },
+        "created_at": {
+          "type": "date",
+          "description": "Timestamp when the review was created",
+          "required": true
+        }
+      }
+    },
+
+    {
+      "collection": "SearchSessions",
+      "description": "Geospatial logs representing locations where users drop map pins while searching for vacation rental properties.",
+      "indexes": [
+        {
+          "field": "location",
+          "type": "2dsphere",
+          "description": "Geospatial index required for the $geoNear aggregation used by Workflow 3"
+        },
+        {
+          "field": "created_at",
+          "type": "ascending",
+          "expireAfterSeconds": 7200,
+          "description": "TTL index that automatically removes search sessions approximately two hours after creation"
+        }
+      ],
+      "aggregation_pipelines": {
+        "trending_search_hotspots": {
+          "description": "Uses $geoNear to find SearchSessions within 5 km of the reference coordinates and groups them into coordinate buckets.",
+          "pipeline": [
+            {
+              "$geoNear": {
+                "near": {
+                  "type": "Point",
+                  "coordinates": [
+                    78.4867,
+                    17.385
+                  ]
+                },
+                "distanceField": "distance_meters",
+                "maxDistance": 5000,
+                "spherical": true
+              }
+            },
+            {
+              "$group": {
+                "_id": {
+                  "lat_bucket": {
+                    "$round": [
+                      {
+                        "$arrayElemAt": [
+                          "$location.coordinates",
+                          1
+                        ]
+                      },
+                      2
+                    ]
+                  },
+                  "lng_bucket": {
+                    "$round": [
+                      {
+                        "$arrayElemAt": [
+                          "$location.coordinates",
+                          0
+                        ]
+                      },
+                      2
+                    ]
+                  }
+                },
+                "session_count": {
+                  "$sum": 1
+                },
+                "avg_distance": {
+                  "$avg": "$distance_meters"
+                }
+              }
+            },
+            {
+              "$sort": {
+                "session_count": -1
+              }
+            }
+          ]
+        }
+      },
+      "sample_document": {
+        "_id": {
+          "type": "ObjectId",
+          "description": "MongoDB auto-generated document identifier"
+        },
+        "user_session_id": {
+          "type": "string",
+          "description": "Identifier of the user's search session",
+          "required": true,
+          "example": "session-abc123"
+        },
+        "location": {
+          "type": "object",
+          "description": "GeoJSON Point used by the MongoDB 2dsphere index",
+          "required": true,
+          "schema": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "Point"
+              ],
+              "required": true
+            },
+            "coordinates": {
+              "type": "array<number>",
+              "description": "[longitude, latitude]. Longitude must appear first according to the GeoJSON specification.",
+              "required": true,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "example": {
+            "type": "Point",
+            "coordinates": [
+              78.4867,
+              17.385
+            ]
+          }
+        },
+        "created_at": {
+          "type": "date",
+          "description": "Timestamp when the search session was created. The TTL index expires documents after 7200 seconds.",
+          "required": true
+        }
+      }
+    }
+  ],
+
+  "cross_database_references": {
+    "description": "MongoDB stores identifiers corresponding to PostgreSQL entities as application-level references. MongoDB does not enforce PostgreSQL-style foreign keys.",
+    "mappings": [
+      {
+        "mongo_collection": "PropertyAmenities",
+        "mongo_field": "property_id",
+        "pg_table": "properties",
+        "pg_column": "id"
+      },
+      {
+        "mongo_collection": "PropertyReviews",
+        "mongo_field": "property_id",
+        "pg_table": "properties",
+        "pg_column": "id"
+      },
+      {
+        "mongo_collection": "PropertyReviews",
+        "mongo_field": "guest_id",
+        "pg_table": "guests",
+        "pg_column": "id"
+      }
+    ]
+  },
+
+  "index_creation_scripts": {
+    "description": "Indexes actually created by 01_collections_and_indexes.js.",
+    "scripts": [
+      {
+        "collection": "SearchSessions",
+        "commands": [
+          "db.collection('SearchSessions').createIndex({ location: '2dsphere' })",
+          "db.collection('SearchSessions').createIndex({ created_at: 1 }, { expireAfterSeconds: 7200 })"
+        ]
+      }
+    ]
+  },
+
+  "implementation_notes": {
+    "schema_flexibility": "MongoDB collections are document-oriented and do not require a fixed relational schema.",
+    "geojson_requirement": "SearchSessions.location must follow the GeoJSON Point structure with coordinates stored as [longitude, latitude].",
+    "workflow_3_reference_point": {
+      "longitude": 78.4867,
+      "latitude": 17.385
+    },
+    "workflow_3_search_radius_meters": 5000,
+    "ttl_seconds": 7200,
+    "workflow_3_index_requirement": "SearchSessions.location requires a 2dsphere index for efficient $geoNear execution.",
+    "workflow_4_requirement": "PropertyReviews must contain rating and location_tags fields for the $facet workflow to produce rating distribution, top tags, and average rating."
+  }
+}

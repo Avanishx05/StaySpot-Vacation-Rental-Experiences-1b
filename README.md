@@ -24,10 +24,13 @@ A web front end and API for the StaySpot Part A databases. Guests browse propert
 | `web/` | React front end (`web/src`), front-end tests (`web/test`) |
 | `docs/handover_note.md` | Step 1: handover note on the inherited Part A |
 | `docs/api_endpoints.md` | API reference (every endpoint, input, output, database, error codes) |
-| `docs/design/` | Step 2: users, wireframes (`wireframes/`), style guide, design system |
-| `docs/screens_3_1_to_3_3.md`, `docs/screens_3_4_to_3_6.md` | Per-screen notes, edge cases and a demo script |
-| `docs/step4_test_plan.md` | Step 4 test plan |
-| `performance/` | EXPLAIN ANALYZE output and the Mongo execution-stats script |
+| `docs/design/` | Step 2: `users.md`, `design_system.md` (also holds the original pine/mint proposal), `wireframes/` (PNGs, `wireframes.html`, `text_sketches.md`) |
+| `docs/screenshots/` | Screenshots used below |
+| `docs/notes/` | Per-screen notes, edge cases, demo script and the Step 4 test plan (see `docs/notes/README.md`) |
+| `docs/partA/` | Part A reference: ERD (current Mermaid and the old PNG) and the Mongo schema map |
+| `docs/archive/` | One superseded early review of the inherited repo, kept for history |
+| `performance/` | EXPLAIN ANALYZE output and the Mongo execution-stats script (`npm run mongo:stats`) |
+| `package.json` (root) | Only the Mongo setup scripts and shortcuts such as `npm start`; `api/` and `web/` have their own `package.json` |
 
 ## How to run
 
@@ -92,7 +95,7 @@ cd api && npm test      # node:test + Supertest against a real PostgreSQL
 cd ../web && npm test   # Vitest + React Testing Library (no databases needed)
 ```
 
-The API suite **drops and recreates** a throw-away database called `stayspot_test` (change it with `TEST_PG_DB`), applies `sql/01`-`05` and tests the real procedures, triggers and indexes. Never point `TEST_PG_DB` at a database you need. Mongo routes are tested against an in-memory fake, so MongoDB is not needed for the tests. The scenarios are listed in `docs/step4_test_plan.md`.
+The API suite **drops and recreates** a throw-away database called `stayspot_test` (change it with `TEST_PG_DB`), applies `sql/01`-`05` and tests the real procedures, triggers and indexes. Never point `TEST_PG_DB` at a database you need. Mongo routes are tested against an in-memory fake, so MongoDB is not needed for the tests. The scenarios are listed in `docs/notes/step4_test_plan.md`.
 
 ### Troubleshooting
 - `psql -d stayspot -c '\dt'` should list `guests`, `properties`, `bookings`, `wallet_audit_logs` and `mv_refresh_log`.
@@ -120,7 +123,7 @@ Every screen has loading, empty and error states and works at phone width.
 3. **Blocked second check-in:** under "Your bookings", check in one booking, then try to check in another. The partial unique index `idx_active_stay` refuses the second one. Complete the first stay, and the second check-in works. About 64% of seeded guests already have a checked-in booking, so for them the first check-in is already refused.
 4. **Audit trail:** the booking just made is the newest DEBIT row. Older rows without a booking are the seeder's wallet changes.
 
-More detail and edge cases: `docs/screens_3_1_to_3_3.md` and `docs/screens_3_4_to_3_6.md`.
+More detail and edge cases: `docs/notes/screens_3_1_to_3_3.md` and `docs/notes/screens_3_4_to_3_6.md`.
 
 ## Screenshots
 
@@ -138,11 +141,24 @@ Taken from a freshly seeded database on 15 Oct 2026.
 
 **Demo video (5 minutes or less): https://drive.google.com/file/d/1d8pwJvabjVTS6G-Dn4gDo2uvqysLROBW/view?usp=sharing**
 
-## Tech choices
-- **Front end: React 18 + Vite + React Router (`HashRouter`).** Function components and hooks; state that belongs in the URL (filters, sort, page, selected property) lives in the URL, and the acting guest lives in a React context. `npm run build` writes `web/dist`, which the API serves.
-- **Charts: Chart.js 4** for the revenue bars and moving-average line. **Map: Leaflet 1.9 with OpenStreetMap tiles.** Both are npm dependencies bundled by Vite, created when a screen mounts and destroyed when it unmounts.
-- **API: Node + Express + `pg`, plus the `mongodb` driver for Map and Reviews.** A thin layer: it validates input, runs the transaction and turns database errors into clear HTTP errors (`docs/api_endpoints.md`). The Map route reuses the Workflow 3 pipeline from `mongo/02_workflow3_geonear.js`, and Reviews reuses the Workflow 4 `$facet` pipeline.
-- **Design:** users and wireframes are in `docs/design/` (Step 2). The built app takes its colours, type and components from `docs/design/design_system.md` (teal palette) rather than the pine and mint palette first proposed in `docs/design/style_guide.md`.
+## Tech choices and justification
+
+The brief lets us pick any stack. We chose the smallest set that covers every screen and that the whole team already knew. One language (JavaScript) runs the API, the front end, the tests and the Mongo scripts, so any member can read and fix any layer.
+
+| Layer | Choice | Why we chose it |
+|---|---|---|
+| Front end | **React 18 + Vite** | The screens share a lot (property picker, tables, pagination, loading/empty/error states, the acting-guest switcher), and React components let us write each of these once. Vite gives a fast dev server and a single `web/dist` build. |
+| Routing and state | **React Router (`HashRouter`)**; URL query params for filters, sort, page and selected property; a React context for the acting guest | Filters live in the URL, so a filtered view can be reloaded or shared. `HashRouter` needs no server rewrite rules, so the API can serve `web/dist` as plain static files. The context is enough for one demo-only "login", so we did not add a state library. |
+| Styling | **Plain CSS with custom properties** (`styles.css`, `screens456.css`) | The brief says consistency matters more than sophistication. A small set of tokens (colours, spacing, radius) and reusable components in `ui.jsx` gives that without a CSS framework, extra build steps or a large dependency. Dark mode and the phone layout (stacked grids, tables that scroll inside their card) come from the same tokens. See `docs/design/design_system.md`. |
+| Charts | **Chart.js 4** | It draws exactly what Analytics and Reviews need (bars plus a moving-average line, rating distribution, tag bars) from a small config. It is an npm dependency, so it is bundled and the charts work offline. |
+| Map | **Leaflet 1.9 + OpenStreetMap tiles** | Free, no API key or billing account, and it handles the origin marker, the 5 km radius circle and hotspot circles. Its only external need is the tile server. |
+| API | **Node + Express** with **`pg`** and the **`mongodb`** driver | The brief asks for a thin layer and for the database to do the work, so the API only validates input, calls the Part A procedures, views and pipelines, and maps database errors to clear HTTP codes. Express and the two official drivers are enough for that. The Map route reuses the Workflow 3 pipeline and Reviews reuses the Workflow 4 `$facet` pipeline from the Part A scripts. |
+| One server | The API also serves `web/dist` | Running the system is one start command and one URL (`http://localhost:4000`), with no CORS setup for the demo. In development, Vite proxies `/api` to the API. |
+| Tests | **`node --test` + supertest** (API), **Vitest + Testing Library** (front end) | The API tests run against a real, throw-away PostgreSQL database, so they exercise the real procedure, triggers and partial unique index. The front-end tests use jsdom with mocked `fetch`, so they need no running services. Neither adds a new test runner to learn. |
+
+We did not use Docker. The system needs PostgreSQL, MongoDB, Node and Python, all listed in "How to run".
+
+**Design:** users and wireframes are in `docs/design/` (Step 2). The built app takes its colours, type and components from `docs/design/design_system.md` (teal palette). The wireframes were drawn with the pine and mint palette first proposed, which is kept as an appendix of the same file.
 
 ## Assumptions
 
@@ -162,7 +178,25 @@ Taken from a freshly seeded database on 15 Oct 2026.
 - Audit trail order is by `timestamp` and then `id`. The timestamp default is `clock_timestamp()`, so several rows written in one transaction keep their real order. Plain dates in the date filter are whole UTC days; the screen sends local-midnight instants.
 - Map hotspots are sessions from the last 120 minutes within the chosen radius (default 5 km), grouped into 0.01° buckets (about 1.1 km) and listed nearest first.
 - The Analytics summary comes from the materialized view and is stale until "Refresh view" is pressed; the screen shows when it was last refreshed.
-- Further numbered assumptions for Analytics, Map and Reviews are in `docs/screens_3_4_to_3_6.md`.
+- Evergreen browsers only. Analytics, Map and Reviews do not depend on the acting guest; hosts are not modelled (the Part A schema has no hosts table), so the same screens serve everyone.
+- Dates are shown in the viewer's local time. Errors share codes across screens: `VALIDATION_ERROR` 400, `NOT_FOUND` 404, `MONGO_UNAVAILABLE` 503 (full table in `docs/api_endpoints.md`).
+
+### Analytics
+- `property_summary` columns are lower-case in PostgreSQL (`propertyid`, `totalnightsbooked`, ...); the API renames them to camelCase.
+- Only days with at least one booking produce a chart point. The property filter is applied in the first CTE and the date filter in the final select, so the 6 days before `from` still count towards the average.
+- The ranking lists only properties with a booking that day. The default date is the latest booking date; `limit` defaults to 10 and is clamped to 1-100.
+- The summary cards show totals over all properties; the table lists the top 10 by gross revenue. `totals` and `totalBookings` are additions to the contract.
+- The "last refreshed" time comes from `mv_refresh_log`.
+
+### Map
+- Hotspots reuse the Part A pipeline: sessions in the last 120 minutes (the TTL window) within `radiusKm` (default 5, allowed 0.1-50), grouped into 0.01° buckets. `distanceKm` is the average distance of the sessions in a bucket. The pipeline sorts by count; the API re-sorts by distance, as the brief asks.
+- Polling every 4 seconds, paused while the tab is hidden or the user presses Pause, and stopped on unmount. Rows whose count grew since the last poll show `+n`. There is no push channel.
+- The default origin is the Hyderabad point (78.4867, 17.385). `GET /map/origins` returns up to 200 properties (50 by default); any other origin is chosen by clicking the map.
+
+### Reviews
+- Facets use the Part A `$facet` pipeline with a leading `$match` on `property_id` when a property is selected. Top tags are the top 5, ratings include half stars and are sorted numerically, and the average is rounded to 2 decimals. With no property selected the numbers cover all reviews and no amenities are shown.
+- The flexible catalog document is the property's `PropertyAmenities` document (amenities, house rules, accessibility features), shown as chips; empty groups are hidden.
+- The property pickers use `GET /api/properties?q=&limit=20`, so only the first 20 matches are offered; a property from the URL that is not among them is fetched by id for its label.
 
 ## Changes to the inherited project
 

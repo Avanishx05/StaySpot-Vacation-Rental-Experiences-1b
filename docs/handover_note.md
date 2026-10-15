@@ -42,7 +42,7 @@
 16. **The seeder's connection settings are fixed and undocumented.** It hard-codes port `5433` and user `postgres` and reads env vars that are never documented. See `data_generation/postgres_seeder.py:14-19`.
 17. **`requirements.txt` is incomplete.** It is missing `pymongo` and lists `dotenv` instead of `python-dotenv`.
 18. **The Mongo performance file isn't stats.** `performance/mongo_execution_stats.json` contains a JavaScript script, not execution statistics.
-19. **The Mongo IDs don't match the Postgres IDs.** Mongo uses `PROP-0001` and `GUEST-00001`, but Postgres uses UUIDs, even though `docs/mongo_schema_map.json` says they map to `properties.id` and `guests.id`.
+19. **The Mongo IDs don't match the Postgres IDs.** Mongo uses `PROP-0001` and `GUEST-00001`, but Postgres uses UUIDs, even though `docs/partA/mongo_schema_map.json` says they map to `properties.id` and `guests.id`.
 
 ## What you changed and why
 
@@ -89,7 +89,7 @@
    - Implement continuous integration jobs that spin up clean PostgreSQL and MongoDB instances and execute migration scripts in sequence. This would instantly catch unexecutable DDL such as disabled extensions (`uuid-ossp`) and syntax errors before code merges.
 
 2. **Standardize Cross-Database ID Conventions:**
-   - Maintain consistency between relational and document stores. When document models declare foreign key relationships to relational entities (as specified in `docs/mongo_schema_map.json`), seeders should coordinate IDs rather than generating disjoint string identifiers (e.g., `PROP-0001` vs UUIDs).
+   - Maintain consistency between relational and document stores. When document models declare foreign key relationships to relational entities (as specified in `docs/partA/mongo_schema_map.json`), seeders should coordinate IDs rather than generating disjoint string identifiers (e.g., `PROP-0001` vs UUIDs).
 
 3. **Avoid Subtransaction Control in PL/pgSQL Exception Blocks:**
    - Avoid executing explicit `COMMIT` or `ROLLBACK` commands inside PL/pgSQL blocks that contain `EXCEPTION` clauses, as PostgreSQL forbids ending transactions during an active subtransaction. Let errors bubble up or raise custom exceptions with meaningful SQLSTATE codes.
@@ -104,4 +104,4 @@
    - Provide concrete environment templates (`.env.example`) and package configurations (`package.json`, `requirements.txt`). Keep instructions in `README.md` verified against actual project scripts to prevent developer setup friction.
 
 ## Merge of screens 3.4-3.6 (Analytics, Map, Reviews)
-The Analytics/Map/Reviews work was developed on a branch of the original Part A scripts and merged into the 3.1-3.3 code base. Where the two copies of a file differed (`sql/01-04`, `seeder`, `.env.example`, `api_endpoints.md`), the 3.1-3.3 version was kept because it contains the fixes listed above; the 3.4-3.6 code uses only objects both versions share (`property_summary`, `mv_refresh_log`, `refresh_property_summary()`, the Mongo collections). Its routes were rewritten from ES modules to this API's CommonJS style and its screens to the shared `dom.js` components and `render({ view, query })` router contract. Details: `docs/screens_3_4_to_3_6.md`.
+The Analytics/Map/Reviews work was developed on a branch of the original Part A scripts and merged into the 3.1-3.3 code base. Where the two copies of a file differed (`sql/01-04`, `seeder`, `.env.example`, `api_endpoints.md`), the 3.1-3.3 version was kept because it contains the fixes listed above; the 3.4-3.6 code uses only objects both versions share (`property_summary`, `mv_refresh_log`, `refresh_property_summary()`, the Mongo collections). Its routes were rewritten from ES modules to this API's CommonJS style and its screens to the shared `dom.js` components and `render({ view, query })` router contract. Details: `docs/notes/screens_3_4_to_3_6.md`.
